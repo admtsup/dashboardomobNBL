@@ -1,0 +1,3871 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard OMOB Monitoring</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .nav-btn {
+      background: transparent;
+      color: #e0e7ff;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .nav-active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .widget {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    .dropdown-checkbox {
+    position: relative;
+}
+
+.dropdown-checkbox-button {
+    width: 100%;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dropdown-checkbox-menu {
+    position: absolute;
+    top: 48px;
+    width: 100%;
+    max-height: 180px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow-y: auto;
+    z-index: 20;
+}
+
+.dropdown-checkbox-item {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+.dropdown-checkbox-item:hover {
+    background: #f3f4f6;
+}
+
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gray-50"><!-- === LOGIN MODAL === -->
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+    <div class="gradient-bg text-white px-8 py-6 relative"><button onclick="closeLoginModal()" class="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+     <div class="flex items-center justify-center mb-4">
+      <div class="bg-white bg-opacity-20 backdrop-blur-sm p-4 rounded-xl">
+       <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+       </svg>
+      </div>
+     </div>
+     <h2 class="text-2xl font-bold text-center">Dashboard OMOB</h2>
+     <p class="text-sm text-blue-100 text-center mt-2">Silakan login untuk melanjutkan</p>
+    </div>
+    <div class="p-8">
+     <form onsubmit="handleLogin(event)" id="loginForm">
+      <div class="mb-4"><label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label> <input type="text" id="username" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan username">
+      </div>
+      <div class="mb-6"><label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label> <input type="password" id="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password">
+      </div><button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"> Login </button>
+     </form>
+     <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <p class="text-xs text-gray-700 mb-2">
+       <svg class="w-4 h-4 inline mr-1 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg> Hanya akun terdaftar yang dapat login sebagai User atau Administrator.</p>
+      <div class="text-xs text-gray-600 pl-5">
+       <p>• <strong>Level 1 (Viewer):</strong> Hanya dapat melihat data</p>
+       <p>• <strong>Level 2 (User):</strong> Dapat edit &amp; update dokumen</p>
+       <p>• <strong>Level 3 (Administrator):</strong> Akses penuh</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- === HEADER DASHBOARD OMOB === -->
+  <header id="mainHeader" class="gradient-bg text-white shadow-2xl relative overflow-hidden hidden"><!-- Background animated gradient -->
+   <div class="absolute inset-0 opacity-20">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 animate-gradient"></div>
+   </div><!-- Header content -->
+   <div class="container mx-auto px-6 py-6 relative z-10">
+    <div class="flex items-center justify-between mb-6"><!-- Logo dan Judul -->
+     <div class="flex items-center space-x-4">
+      <div class="bg-white bg-opacity-20 backdrop-blur-sm p-3 rounded-xl">
+       <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+       </svg>
+      </div>
+      <div>
+       <h1 class="text-2xl font-bold">One Machine One Book</h1>
+       <p class="text-sm text-blue-100">Dashboard Monitoring Dokumen NBL Oral</p>
+      </div>
+     </div><!-- Status dan Tombol -->
+     <div class="flex items-center space-x-3"><!-- User Info -->
+      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg px-4 py-2">
+       <p class="text-xs text-blue-100">Logged in as</p>
+       <p class="text-sm font-semibold" id="currentUserDisplay">Viewer</p>
+      </div><!-- Login Button for Level 2/3 --> <button onclick="showLoginModal()" id="loginButton" class="flex items-center px-4 py-2 bg-green-500 bg-opacity-80 hover:bg-opacity-100 rounded-lg transition-all">
+       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+       </svg><span class="text-sm">Login User/Admin</span> </button> <button onclick="refreshDashboard()" class="flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all">
+       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+       </svg><span class="text-sm">Refresh</span> </button> <button onclick="syncToCloud()" class="flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all">
+       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+       </svg><span class="text-sm">Sync</span> </button>
+      <div class="text-right bg-white bg-opacity-10 backdrop-blur-sm rounded-lg px-4 py-2">
+       <p class="text-xs text-blue-100">Last Updated</p>
+       <p class="text-sm font-semibold" id="lastUpdate">Loading...</p>
+      </div>
+     </div>
+    </div><!-- Navigation -->
+    <nav class="flex justify-center space-x-2"><button onclick="showPage('progress')" class="nav-btn nav-active px-6 py-2 rounded-lg text-sm font-medium" data-page="progress"> Progress OMOB </button> <button onclick="showPage('detail')" class="nav-btn px-6 py-2 rounded-lg text-sm font-medium" data-page="detail"> Detail Dokumen </button> <button onclick="showPage('history')" class="nav-btn px-6 py-2 rounded-lg text-sm font-medium hidden" data-page="history" id="historyNavBtn"> Change History </button> <button onclick="showPage('opl')" class="nav-btn px-6 py-2 rounded-lg text-sm font-medium" data-page="opl"> Dashboard OPL </button>
+    </nav>
+   </div>
+  </header><!-- === MAIN CONTENT === -->
+  <main id="mainContent" class="w-full hidden"><!-- === PROGRESS KESELURUHAN SECTION === -->
+   <section id="progressPage" class="page-section active px-6 py-8"><!-- GRID CARD RINGKASAN -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><!-- Total Mesin -->
+     <div class="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 flex items-center space-x-4">
+      <div class="p-3 bg-blue-100 rounded-xl">
+       <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zM9 17a2 2 0 002 2h2a2 2 0 002-2M13 17V9a2 2 0 012-2h2a2 2 0 012 2v8" />
+       </svg>
+      </div>
+      <div>
+       <p class="text-sm text-gray-500">Total Mesin</p>
+       <p class="text-2xl font-bold text-gray-700" id="totalMachines">0</p>
+      </div>
+     </div><!-- Dokumen Lengkap -->
+     <div class="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 flex items-center space-x-4">
+      <div class="p-3 bg-green-100 rounded-xl">
+       <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+       </svg>
+      </div>
+      <div>
+       <p class="text-sm text-gray-500">Dokumen Lengkap</p>
+       <p class="text-2xl font-bold text-gray-700" id="completeDocs">0</p>
+      </div>
+     </div><!-- Dokumen Kurang -->
+     <div class="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 flex items-center space-x-4">
+      <div class="p-3 bg-yellow-100 rounded-xl">
+       <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 11-0.001 14.001A7 7 0 0112 5z" />
+       </svg>
+      </div>
+      <div>
+       <p class="text-sm text-gray-500">Dokumen Kurang</p>
+       <p class="text-2xl font-bold text-gray-700" id="incompleteDocs">0</p>
+      </div>
+     </div><!-- SOP Akan Expired -->
+     <div class="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 flex items-center space-x-4">
+      <div class="p-3 bg-red-100 rounded-xl">
+       <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg>
+      </div>
+      <div>
+       <p class="text-sm text-gray-500">SOP Akan Expired</p>
+       <p class="text-2xl font-bold text-gray-700" id="expiredSOP">0</p>
+      </div>
+     </div>
+    </div><!-- === LAYOUT CHART & STATUS MESIN === -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"><!-- DONUT CHART - Kolom Kiri -->
+     <div class="lg:col-span-1">
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
+       <h2 class="text-lg font-semibold text-gray-700 mb-4">Progress Keseluruhan</h2>
+       <div class="flex flex-col items-center">
+        <canvas id="progressChart" width="160" height="160"></canvas>
+        <div class="text-center mt-4">
+         <p class="text-2xl font-bold text-gray-800" id="progressPercentage">0%</p>
+         <p class="text-sm text-gray-500">Dokumen Lengkap</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- STATUS DOKUMEN PER MESIN - Kolom Kanan -->
+     <div class="lg:col-span-2">
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+       <h2 class="text-lg font-semibold text-gray-700 mb-4">Status Dokumen per Mesin</h2><!-- Filter Section -->
+       <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"><!-- Filter Ruangan -->
+         <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Ruangan</label>
+          <div class="relative"><button onclick="toggleMultiSelectDropdown('roomFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="roomFilterLabel" class="text-sm text-gray-700">Pilih Ruangan</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg></button>
+           <div id="roomFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+            <div class="p-2 border-b"><input type="text" id="roomSearchBar" placeholder="Cari ruangan..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('roomFilter', 'roomSearchBar')">
+            </div>
+            <div class="max-h-48 overflow-y-auto p-2" id="roomFilterOptions"></div>
+           </div>
+          </div>
+         </div><!-- Filter Proses -->
+         <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Proses</label>
+          <div class="relative"><button onclick="toggleMultiSelectDropdown('processFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="processFilterLabel" class="text-sm text-gray-700">Pilih Proses</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg></button>
+           <div id="processFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+            <div class="p-2 border-b"><input type="text" id="processSearchBar" placeholder="Cari proses..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('processFilter', 'processSearchBar')">
+            </div>
+            <div class="max-h-48 overflow-y-auto p-2" id="processFilterOptions"></div>
+           </div>
+          </div>
+         </div><!-- Filter Mesin -->
+         <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Mesin</label>
+          <div class="relative"><button onclick="toggleMultiSelectDropdown('machineFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="machineFilterLabel" class="text-sm text-gray-700">Pilih Mesin</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg></button>
+           <div id="machineFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+            <div class="p-2 border-b"><input type="text" id="machineSearchBar" placeholder="Cari mesin..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('machineFilter', 'machineSearchBar')">
+            </div>
+            <div class="max-h-48 overflow-y-auto p-2" id="machineFilterOptions"></div>
+           </div>
+          </div>
+         </div>
+        </div><!-- Reset Button -->
+        <div class="flex justify-end"><button onclick="resetMachineFilters()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg> Reset Filter </button>
+        </div>
+       </div>
+       <div id="machineStatusList" class="space-y-4"></div><!-- Pagination Controls for Machine Status -->
+       <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-2"><label class="text-sm text-gray-600">Tampilkan:</label> <select id="machinePageSize" onchange="changeMachinePageSize()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm"> <option value="10">10</option> <option value="25">25</option> <option value="50">50</option> <option value="100">100</option> </select> <span class="text-sm text-gray-600">per halaman</span>
+        </div>
+        <div class="flex items-center space-x-2"><button onclick="changeMachinePage('prev')" id="machinePrevBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> ← Previous </button> <span class="text-sm text-gray-600" id="machinePageInfo">Page 1 of 1</span> <button onclick="changeMachinePage('next')" id="machineNextBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> Next → </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- === Dokumen Belum Lengkap === -->
+    <div class="widget mb-8" id="incompleteSection">
+     <div class="flex justify-between items-center mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">Dokumen Belum Lengkap</h3>
+      <div class="flex space-x-2"><button onclick="exportIncompleteDocuments('csv')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> Export CSV </button> <button onclick="exportIncompleteDocuments('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> Export PDF </button>
+      </div>
+     </div><!-- Filter -->
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Jenis Dokumen</label>
+       <div class="relative"><button onclick="toggleMultiSelectDropdown('incompleteDocFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="incompleteDocFilterLabel" class="text-sm text-gray-700">Pilih Jenis Dokumen</span>
+         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+         </svg></button>
+        <div id="incompleteDocFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+         <div class="p-2 border-b"><input type="text" id="incompleteDocSearchBar" placeholder="Cari jenis dokumen..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('incompleteDocFilter', 'incompleteDocSearchBar')">
+         </div>
+         <div class="max-h-48 overflow-y-auto p-2" id="incompleteDocFilterOptions"></div>
+        </div>
+       </div>
+      </div>
+      <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Mesin</label>
+       <div class="relative"><button onclick="toggleMultiSelectDropdown('incompleteMachineFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="incompleteMachineFilterLabel" class="text-sm text-gray-700">Pilih Mesin</span>
+         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+         </svg></button>
+        <div id="incompleteMachineFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+         <div class="p-2 border-b"><input type="text" id="incompleteMachineSearchBar" placeholder="Cari mesin..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('incompleteMachineFilter', 'incompleteMachineSearchBar')">
+         </div>
+         <div class="max-h-48 overflow-y-auto p-2" id="incompleteMachineFilterOptions"></div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Table -->
+     <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+       <thead class="bg-gray-50">
+        <tr>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Dokumen</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul Dokumen</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Dokumen</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase text-center">Revisi</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruangan</th>
+         <th id="incompleteActionHeader" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+        </tr>
+       </thead>
+       <tbody id="incompleteDocumentsTable" class="bg-white divide-y divide-gray-200"></tbody>
+      </table>
+     </div><!-- Pagination Controls for Incomplete Documents -->
+     <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-2"><label class="text-sm text-gray-600">Tampilkan:</label> <select id="incompletePageSize" onchange="changeIncompletePageSize()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm"> <option value="10">10</option> <option value="25">25</option> <option value="50">50</option> <option value="100">100</option> </select> <span class="text-sm text-gray-600">per halaman</span>
+      </div>
+      <div class="flex items-center space-x-2"><button onclick="changeIncompletePage('prev')" id="incompletePrevBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> ← Previous </button> <span class="text-sm text-gray-600" id="incompletePageInfo">Page 1 of 1</span> <button onclick="changeIncompletePage('next')" id="incompleteNextBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> Next → </button>
+      </div>
+     </div>
+    </div>
+   </section><!-- === DETAIL DOKUMEN SECTION === -->
+   <section id="detailPage" class="page-section px-6 py-8"><!-- Expiring SOPs Section -->
+    <div class="widget mb-8">
+     <div class="flex justify-between items-center mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">SOP yang Akan Expired (90 Hari ke Depan)</h3><button onclick="toggleSOPCalendar()" class="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm" title="Lihat Kalender">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+       </svg></button>
+     </div><!-- Hidden SOP Calendar -->
+     <div id="sopCalendarContainer" class="hidden mb-6 p-4 bg-gray-50 rounded-lg border">
+      <div class="flex justify-between items-center mb-4">
+       <h4 class="text-md font-medium text-gray-700">Kalender SOP Expiry</h4><button onclick="toggleSOPCalendar()" class="text-gray-500 hover:text-gray-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div id="sopCalendar" class="bg-white rounded-lg">
+       <!-- Calendar will be populated here -->
+      </div>
+     </div>
+     <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+       <thead class="bg-gray-50">
+        <tr>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mesin</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dokumen</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Dokumen</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Expired</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa Hari</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+        </tr>
+       </thead>
+       <tbody id="expiringSOPTable" class="bg-white divide-y divide-gray-200"></tbody>
+      </table>
+     </div>
+    </div><!-- ===================================== --> <!-- === DETAIL DOKUMEN PER MESIN === --> <!-- ===================================== -->
+    <div class="widget mb-8">
+     <div class="flex justify-between items-center mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">Detail Dokumen per Mesin</h3>
+      <div class="flex space-x-2"><button onclick="exportMachineDetails('csv')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> Export CSV </button> <button onclick="exportMachineDetails('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> Export PDF </button>
+      </div>
+     </div><!-- Filter -->
+     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"><!-- Filter Ruangan -->
+       <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Ruangan</label>
+        <div class="relative"><button onclick="toggleMultiSelectDropdown('detailRoomFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="detailRoomFilterLabel" class="text-sm text-gray-700">Pilih Ruangan</span>
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg></button>
+         <div id="detailRoomFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+          <div class="p-2 border-b"><input type="text" id="detailRoomSearchBar" placeholder="Cari ruangan..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('detailRoomFilter', 'detailRoomSearchBar')">
+          </div>
+          <div class="max-h-48 overflow-y-auto p-2" id="detailRoomFilterOptions"></div>
+         </div>
+        </div>
+       </div><!-- Filter Proses -->
+       <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Proses</label>
+        <div class="relative"><button onclick="toggleMultiSelectDropdown('detailProcessFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="detailProcessFilterLabel" class="text-sm text-gray-700">Pilih Proses</span>
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg></button>
+         <div id="detailProcessFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+          <div class="p-2 border-b"><input type="text" id="detailProcessSearchBar" placeholder="Cari proses..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('detailProcessFilter', 'detailProcessSearchBar')">
+          </div>
+          <div class="max-h-48 overflow-y-auto p-2" id="detailProcessFilterOptions"></div>
+         </div>
+        </div>
+       </div><!-- Filter Mesin -->
+       <div class="relative"><label class="block text-sm font-medium text-gray-700 mb-2">Filter Mesin</label>
+        <div class="relative"><button onclick="toggleMultiSelectDropdown('detailMachineFilter')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 flex justify-between items-center"> <span id="detailMachineFilterLabel" class="text-sm text-gray-700">Pilih Mesin</span>
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg></button>
+         <div id="detailMachineFilter" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+          <div class="p-2 border-b"><input type="text" id="detailMachineSearchBar" placeholder="Cari mesin..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded" oninput="filterDropdownOptions('detailMachineFilter', 'detailMachineSearchBar')">
+          </div>
+          <div class="max-h-48 overflow-y-auto p-2" id="detailMachineFilterOptions"></div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Reset Button -->
+      <div class="flex justify-end"><button onclick="resetDetailFilters()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg> Reset Filter </button>
+      </div>
+     </div><!-- Container hasil render per mesin -->
+     <div id="machineDetailsContainer" class="space-y-6"></div><!-- Pagination Controls -->
+     <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-2"><label class="text-sm text-gray-600">Tampilkan:</label> <select id="detailPageSize" onchange="changeDetailPageSize()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm"> <option value="10">10</option> <option value="25">25</option> <option value="50">50</option> </select> <span class="text-sm text-gray-600">per halaman</span>
+      </div>
+      <div class="flex items-center space-x-2"><button onclick="changeDetailPage('prev')" id="detailPrevBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> ← Previous </button> <span class="text-sm text-gray-600" id="detailPageInfo">Page 1 of 1</span> <button onclick="changeDetailPage('next')" id="detailNextBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> Next → </button>
+      </div>
+     </div>
+    </div>
+   </section><!-- === CHANGE HISTORY SECTION === -->
+   <section id="historyPage" class="page-section px-6 py-8">
+    <div class="widget">
+     <div class="flex justify-between items-center mb-6">
+      <div>
+       <h2 class="text-2xl font-bold text-gray-800">Change History</h2>
+       <p class="text-sm text-gray-500 mt-1">Riwayat perubahan dokumen SOP dan status dokumen</p>
+      </div><button onclick="refreshChangeHistory()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+       </svg> Refresh </button>
+     </div><!-- Filter -->
+     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3"><!-- Filter Action Type -->
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Filter Action Type</label> <select id="historyActionFilter" onchange="filterChangeHistory()" class="w-full px-3 py-2 border border-gray-300 rounded-lg"> <option value="all">All Actions</option> <option value="Update SOP">Update SOP</option> <option value="Update Status Dokumen">Update Status Dokumen</option> </select>
+       </div><!-- Filter User -->
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Filter User</label> <select id="historyUserFilter" onchange="filterChangeHistory()" class="w-full px-3 py-2 border border-gray-300 rounded-lg"> <option value="all">All Users</option> </select>
+       </div><!-- Filter Machine -->
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Filter Machine</label> <select id="historyMachineFilter" onchange="filterChangeHistory()" class="w-full px-3 py-2 border border-gray-300 rounded-lg"> <option value="all">All Machines</option> </select>
+       </div>
+      </div>
+     </div><!-- History Table -->
+     <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+       <thead class="bg-gradient-to-r from-blue-50 to-purple-50">
+        <tr>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Timestamp</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">User</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Machine</th>
+         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Details</th>
+        </tr>
+       </thead>
+       <tbody id="changeHistoryTable" class="bg-white divide-y divide-gray-200"><!-- Will be populated dynamically -->
+       </tbody>
+      </table>
+     </div><!-- Pagination -->
+     <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-2"><label class="text-sm text-gray-600">Tampilkan:</label> <select id="historyPageSize" onchange="changeHistoryPageSize()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm"> <option value="10">10</option> <option value="25">25</option> <option value="50">50</option> <option value="100">100</option> </select> <span class="text-sm text-gray-600">per halaman</span>
+      </div>
+      <div class="flex items-center space-x-2"><button onclick="changeHistoryPage('prev')" id="historyPrevBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> ← Previous </button> <span class="text-sm text-gray-600" id="historyPageInfo">Page 1 of 1</span> <button onclick="changeHistoryPage('next')" id="historyNextBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"> Next → </button>
+      </div>
+     </div>
+    </div>
+   </section><!-- === DASHBOARD OPL SECTION === -->
+  <section id="oplPage" class="page-section hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-500 text-sm">Total OPL</p>
+                    <p class="text-2xl font-bold text-gray-800" id="totalOPL">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-full">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-500 text-sm">Mesin/Area Tercakup</p>
+                    <p class="text-2xl font-bold text-gray-800" id="totalMachinesOPL">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-yellow-100 rounded-full">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-500 text-sm">Rata-rata OPL/Mesin</p>
+                    <p class="text-2xl font-bold text-gray-800" id="avgOPLPerMachine">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabel & Filter -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-6">Database OPL (One Point Lesson)</h3>
+
+        <!-- FILTER AREA -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-semibold text-gray-700">Filter Data</h3>
+                <button onclick="resetOPLFilters()" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs font-medium">
+                    Reset Filter
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Mesin Filter -->
+                <div class="dropdown-checkbox">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Mesin/Area</label>
+                    <button type="button" class="dropdown-checkbox-button" onclick="toggleOPLFilterDropdown('oplMachineFilterMenu')">
+                        <span id="oplMachineFilterText">Semua Mesin/Area</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div id="oplMachineFilterMenu" class="dropdown-checkbox-menu hidden">
+                        <div class="p-2 border-b border-gray-200">
+                            <input type="text" id="oplMachineSearch" placeholder="Cari mesin..."
+                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                                oninput="filterDropdownOptions('oplMachineFilter')">
+                        </div>
+                        <div id="oplMachineFilterOptions"></div>
+                    </div>
+                </div>
+
+                <!-- Owner Filter -->
+                <div class="dropdown-checkbox">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter OPL Owner</label>
+                    <button type="button" class="dropdown-checkbox-button" onclick="toggleOPLFilterDropdown('oplOwnerFilterMenu')">
+                        <span id="oplOwnerFilterText">Semua Owner</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div id="oplOwnerFilterMenu" class="dropdown-checkbox-menu hidden">
+                        <div class="p-2 border-b border-gray-200">
+                            <input type="text" id="oplOwnerSearch" placeholder="Cari owner..."
+                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                                oninput="filterDropdownOptions('oplOwnerFilter')">
+                        </div>
+                        <div id="oplOwnerFilterOptions"></div>
+                    </div>
+                </div>
+
+                <!-- Search Judul -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Judul OPL</label>
+                    <input type="text" id="oplTitleSearch" oninput="applyOPLFilters()"
+                        placeholder="Cari judul OPL..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul OPL</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor OPL</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rev</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penyusun</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPL Owner</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issued Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin/Area</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="oplTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-200 mt-4">
+            <div class="flex items-center space-x-2">
+                <label class="text-sm text-gray-600">Tampilkan:</label>
+                <select id="oplItemsPerPage" onchange="changeOPLItemsPerPage()"
+                    class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="text-sm text-gray-600">per halaman</span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="previousOPLPage()" id="oplPrevBtn"
+                    class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                    Previous
+                </button>
+                <span id="oplPageInfo" class="text-sm text-gray-600 px-3">Halaman 1 dari 1</span>
+                <button onclick="nextOPLPage()" id="oplNextBtn"
+                    class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                    Next
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                Total: <span id="oplTotalItems" class="font-semibold">0</span> OPL
+            </div>
+        </div>
+    </div>
+
+</section>
+  </main><!-- === UPDATE SOP MODAL === -->
+  <div id="updateSOPModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+     <h3 class="text-xl font-bold">Update SOP</h3><button onclick="closeUpdateSOPModal()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div>
+    <form onsubmit="handleUpdateSOP(event)" class="p-6"><input type="hidden" id="updateSOPMachine"> <input type="hidden" id="updateSOPOldNumber">
+     <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+      <p class="text-sm text-gray-600">Mesin: <span class="font-semibold text-gray-800" id="updateSOPMachineDisplay"></span></p>
+      <p class="text-sm text-gray-600">Dokumen: <span class="font-semibold text-gray-800" id="updateSOPTitleDisplay"></span></p>
+     </div>
+     <div class="mb-4"><label for="updateSOPNumber" class="block text-sm font-medium text-gray-700 mb-2">Nomor Dokumen Baru</label> <input type="text" id="updateSOPNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: SOP-PR-G030">
+     </div>
+     <div class="mb-4"><label for="updateSOPRevision" class="block text-sm font-medium text-gray-700 mb-2">Revisi Baru</label> <input type="text" id="updateSOPRevision" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: 3">
+     </div>
+     <div class="mb-4"><label for="updateSOPIssuedDate" class="block text-sm font-medium text-gray-700 mb-2">Issued Date Baru</label> <input type="date" id="updateSOPIssuedDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+     </div>
+     <div class="mb-6"><label for="updateSOPReviewDate" class="block text-sm font-medium text-gray-700 mb-2">Review Date Baru</label> <input type="date" id="updateSOPReviewDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+     </div>
+     <div class="flex space-x-3"><button type="button" onclick="closeUpdateSOPModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"> Batal </button> <button type="submit" class="flex-1 px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90 transition"> Update SOP </button>
+     </div>
+    </form>
+   </div>
+  </div><!-- === UPDATE DOCUMENT MODAL (USER & ADMIN) === -->
+  <div id="updateDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+     <h3 class="text-xl font-bold">Update Status Dokumen</h3><button onclick="closeUpdateDocumentModal()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div>
+    <form onsubmit="handleUpdateDocument(event)" class="p-6"><input type="hidden" id="updateDocMachine"> <input type="hidden" id="updateDocType"> <input type="hidden" id="updateDocNumber">
+     <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+      <p class="text-sm text-gray-600 mb-1">📦 Mesin: <span class="font-semibold text-gray-800" id="updateDocMachineDisplay"></span></p>
+      <p class="text-sm text-gray-600 mb-1">📄 Jenis Dokumen: <span class="font-semibold text-gray-800" id="updateDocTypeDisplay"></span></p>
+      <p class="text-sm text-gray-600">🔢 Nomor: <span class="font-semibold text-gray-800" id="updateDocNumberDisplay"></span></p>
+     </div>
+     <div class="mb-6"><label for="updateDocStatus" class="block text-sm font-medium text-gray-700 mb-2">Status Dokumen Baru</label> <select id="updateDocStatus" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"> <option value="incomplete">❌ Belum Lengkap</option> <option value="complete">✅ Lengkap</option> </select>
+     </div>
+     <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+      <p class="text-xs text-yellow-800">
+       <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+       </svg><strong>Perhatian:</strong> Perubahan status dokumen bersifat lokal dan tidak otomatis tersimpan ke Google Sheets.</p>
+     </div>
+     <div class="flex space-x-3"><button type="button" onclick="closeUpdateDocumentModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"> Batal </button> <button type="submit" class="flex-1 px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90 transition font-semibold"> 💾 Simpan Perubahan </button>
+     </div>
+    </form>
+   </div>
+  </div><!-- === FOOTER === -->
+  <footer class="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-300 py-8 border-t border-gray-700">
+   <div class="container mx-auto px-6 text-center"><!-- Logo + Title -->
+    <div class="flex flex-col items-center mb-4">
+     <div class="flex items-center space-x-3 mb-2">
+      <div class="bg-blue-600 p-3 rounded-2xl shadow-lg">
+       <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2-2v18m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+       </svg>
+      </div>
+      <div class="text-left">
+       <h3 class="text-lg font-bold text-white">One Machine One Book</h3>
+       <p class="text-sm text-gray-400">Dashboard Monitoring Dokumen NBL Oral</p>
+      </div>
+     </div>
+    </div>
+    <hr class="border-gray-700 my-4"><!-- Copyright + Version -->
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm space-y-2 md:space-y-0">
+     <p class="text-gray-400">��� 2025 <span class="font-semibold text-white">PT. Dankos Farma</span>. All rights reserved.</p>
+     <div class="flex items-center space-x-1 text-gray-400">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9" /> <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19H4v-3L16.5 3.5z" />
+      </svg><span>Version 1.0.0</span>
+     </div>
+    </div>
+    <hr class="border-gray-700 my-4"><!-- Credit -->
+    <p class="text-sm text-gray-400">Dikembangkan dengan <span class="text-red-500">❤</span> oleh <span class="font-semibold text-blue-400">TSUP-NBL Oral</span></p>
+   </div>
+  </footer>
+  <script>
+  // ==== Google Sheets Configuration ====
+  const SHEET_ID = '11Xf-9zdynRgNIIu2nx_CVpfeF57nZlMBpx3BwoKnRaA';
+  const SHEET_NAME = 'Prepare O.M.O.B_System Reminder';
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  
+  const USER_LOGIN_SHEET = 'UserLogin';
+  const USER_LOGIN_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(USER_LOGIN_SHEET)}`;
+  
+  const CHANGE_HISTORY_SHEET = 'Change History';
+  const CHANGE_HISTORY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(CHANGE_HISTORY_SHEET)}`;
+  
+  // ==== Google Apps Script Web App URL ====
+  // URL Web App dari Google Apps Script (sudah di-deploy)
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdA_00blDWDy6ul7cB4TypNt9WMWE8lS--xDlZ94sBhg568pcQHFc-jRY9g9tchMNZ/exec';
+
+  // ==== User Authentication ====
+  let USERS = {}; // Will be populated from Google Sheets
+
+  let currentUser = {
+    username: null,
+    level: 1, // Default viewer level
+    name: 'Viewer',
+    isAuthenticated: true // Auto login as viewer
+  };
+
+  // ==== Global Data Structure ====
+  let globalData = {
+    machines: [],
+    isLoading: true,
+    lastFetch: null
+  };
+
+  // ==== Fetch User Login Data from Google Sheets ====
+  async function fetchUserLoginData() {
+    try {
+      const response = await fetch(USER_LOGIN_URL);
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          processUserLoginData(results.data);
+        },
+        error: function(error) {
+          console.error('Error parsing UserLogin CSV:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching UserLogin sheet:', error);
+    }
+  }
+
+  // ==== Process User Login Data ====
+  function processUserLoginData(rows) {
+    USERS = {}; // Clear existing users
+    
+    rows.forEach(row => {
+      // Get all column values
+      const columns = Object.values(row);
+      
+      // Column A = Name/PIC SOP (index 0)
+      // Column B = Password (index 1)  
+      // Column C = Username (index 2)
+      // Column D = Level (index 3)
+      
+      const name = columns[0] ? columns[0].trim() : '';
+      const password = columns[1] ? columns[1].trim() : '';
+      const username = columns[2] ? columns[2].trim() : '';
+      const level = parseInt(columns[3]);
+      
+      console.log('Processing row:', { name, username, password: '***', level });
+      
+      if (username && password && !isNaN(level)) {
+        // Store with original username (case-sensitive key)
+        // Use username (Column C) as display name
+        USERS[username] = {
+          password: password,
+          level: level,
+          displayName: username // Use username from Column C
+        };
+        console.log('✓ Loaded user:', username, 'Level:', level);
+      } else {
+        console.log('✗ Skipped incomplete row:', { username, hasPassword: !!password, level });
+      }
+    });
+    
+    console.log('User login data loaded:', Object.keys(USERS).length, 'users');
+    console.log('Available usernames:', Object.keys(USERS));
+  }
+
+  // ==== Fetch Data from Google Sheets ====
+  async function fetchSheetData() {
+    try {
+      globalData.isLoading = true;
+      showLoadingIndicator();
+
+      const response = await fetch(SHEET_URL);
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          processSheetData(results.data);
+          globalData.isLoading = false;
+          globalData.lastFetch = new Date();
+          hideLoadingIndicator();
+          updateDashboard();
+          showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
+        },
+        error: function(error) {
+          console.error('Error parsing CSV:', error);
+          globalData.isLoading = false;
+          hideLoadingIndicator();
+          showNotification('Gagal memuat data dari Google Sheets!', 'error');
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching sheet:', error);
+      globalData.isLoading = false;
+      hideLoadingIndicator();
+      showNotification('Gagal menghubungkan ke Google Sheets!', 'error');
+    }
+  }
+
+  // ==== Process Sheet Data ====
+  function processSheetData(rows) {
+    const machinesMap = new Map();
+
+    rows.forEach(row => {
+      // Extract data from columns (sesuai header)
+      const process = row['PROSES'] || '';                    // Kolom A
+      const room = row['NO. RUANGAN'] || '';                  // Kolom B
+      const machineName = row['NAMA MESIN'] || '';            // Kolom C
+      const machineType = row['JENIS MESIN'] || '';           // Kolom D
+      const docType = row['DOKUMEN WAJIB'] || '';             // Kolom E
+      const docNumber = row['NO. DOKUMEN'] || '';             // Kolom F
+      const docTitle = row['JUDUL DOKUMEN'] || '';            // Kolom G
+      const revision = row['REVISI KE-'] || '0';              // Kolom H
+      const issuedDate = row['ISSUED DATE'] || '';            // Kolom I
+      const reviewDate = row['REVIEW DATE'] || '';            // Kolom J
+      const status = row['STATUS'] || '';                     // Kolom K
+      const machineStatus = row['STATUS/MESIN'] || '';        // Kolom L
+
+      // Skip empty rows
+      if (!machineName) return;
+
+      // Create unique machine key (per mesin nama sama = 1 mesin)
+      const machineKey = machineName.trim();
+
+      // Initialize machine if not exists
+      if (!machinesMap.has(machineKey)) {
+        machinesMap.set(machineKey, {
+          machineName: machineName.trim(),
+          machineCode: machineType.trim() || machineName.trim(),
+          area: machineType.trim() || '-',
+          room: room.trim(),
+          process: process.trim(),
+          machineStatus: machineStatus.trim(), // Status mesin dari kolom L
+          documents: []
+        });
+      }
+
+      // Add document to machine
+      const machine = machinesMap.get(machineKey);
+      
+      // Map document type to lowercase, ganti IIA jadi AIIA
+      let normalizedDocType = docType.toLowerCase().trim();
+      if (normalizedDocType === 'iia') normalizedDocType = 'aiia';
+      
+      // Determine document status dari kolom K
+      // DEFAULT = incomplete
+      // HANYA jika kolom K tepat berisi "lengkap" (case insensitive) = complete
+      // Semua kondisi lain (kosong, "tidak lengkap", "belum", dll) = incomplete
+      let docStatus = 'incomplete';
+      const statusLower = status.toLowerCase().trim();
+      
+      // Hanya set complete jika statusnya TEPAT "lengkap" atau "complete" tanpa kata negatif
+      if (statusLower === 'lengkap' || statusLower === 'complete') {
+        docStatus = 'complete';
+      }
+
+      // Untuk SOP: expiry date = review date (kolom J)
+      let expiryDate = '';
+      if (normalizedDocType === 'sop' && reviewDate) {
+        const reviewDateObj = parseDate(reviewDate);
+        if (reviewDateObj) {
+          expiryDate = reviewDateObj.toISOString().split('T')[0];
+        }
+      }
+
+      machine.documents.push({
+        type: normalizedDocType,
+        title: docTitle.trim(),
+        docNumber: docNumber.trim(),
+        rev: revision.trim(),
+        status: docStatus,
+        expiryDate: expiryDate,
+        issuedDate: issuedDate.trim(),
+        reviewDate: reviewDate.trim()
+      });
+    });
+
+    // Convert map to array
+    globalData.machines = Array.from(machinesMap.values());
+  }
+
+  // ==== Parse Date Helper ====
+  function parseDate(dateStr) {
+    if (!dateStr || dateStr.trim() === '') return null;
+    
+    // Clean the string
+    dateStr = dateStr.trim();
+    
+    // Map bulan Indonesia ke bulan Inggris (angka)
+    const indonesianMonths = {
+      'januari': 0, 'februari': 1, 'maret': 2, 'april': 3,
+      'mei': 4, 'juni': 5, 'juli': 6, 'agustus': 7,
+      'september': 8, 'oktober': 9, 'november': 10, 'desember': 11,
+      'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'mei': 4,
+      'jun': 5, 'jul': 6, 'agt': 7, 'agu': 7, 'aug': 7,
+      'sep': 8, 'okt': 9, 'oct': 9, 'nov': 10, 'des': 11, 'dec': 11
+    };
+
+    // Try format: "DD Bulan YYYY" atau "DD-Bulan-YYYY" (e.g., "19 Agu 2025", "15 Januari 2024" atau "15-Jan-2024")
+    const indonesianDateMatch = dateStr.match(/^(\d{1,2})[\s\-\/]([a-zA-Z]+)[\s\-\/](\d{4})$/i);
+    if (indonesianDateMatch) {
+      const day = parseInt(indonesianDateMatch[1]);
+      const monthName = indonesianDateMatch[2].toLowerCase();
+      const year = parseInt(indonesianDateMatch[3]);
+      
+      const monthIndex = indonesianMonths[monthName];
+      if (monthIndex !== undefined) {
+        return new Date(year, monthIndex, day);
+      }
+    }
+
+    // Try format: "Bulan DD, YYYY" (e.g., "Januari 15, 2024")
+    const indonesianDateMatch2 = dateStr.match(/^([a-zA-Z]+)[\s]+(\d{1,2}),?[\s]+(\d{4})$/i);
+    if (indonesianDateMatch2) {
+      const monthName = indonesianDateMatch2[1].toLowerCase();
+      const day = parseInt(indonesianDateMatch2[2]);
+      const year = parseInt(indonesianDateMatch2[3]);
+      
+      const monthIndex = indonesianMonths[monthName];
+      if (monthIndex !== undefined) {
+        return new Date(year, monthIndex, day);
+      }
+    }
+
+    // Try DD/MM/YYYY format (common in Indonesia)
+    const ddmmyyyyMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (ddmmyyyyMatch) {
+      const day = parseInt(ddmmyyyyMatch[1]);
+      const month = parseInt(ddmmyyyyMatch[2]) - 1; // Months are 0-indexed
+      const year = parseInt(ddmmyyyyMatch[3]);
+      return new Date(year, month, day);
+    }
+
+    // Try ISO format last
+    const isoDate = new Date(dateStr);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate;
+    }
+
+    return null;
+  }
+
+  // ==== Format Date to English (DD MMM YYYY) ====
+  function formatDateToEnglish(dateStr) {
+    if (!dateStr || dateStr.trim() === '' || dateStr === '-') return '-';
+    
+    const date = parseDate(dateStr);
+    if (!date) return dateStr; // Return original if parsing fails
+    
+    const day = date.getDate();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day} ${month} ${year}`;
+  }
+
+  // ==== Show Loading Indicator ====
+  function showLoadingIndicator() {
+    const loader = document.createElement('div');
+    loader.id = 'loadingIndicator';
+    loader.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+    loader.innerHTML = `
+      <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+        <p class="text-gray-700 font-semibold">Memuat data dari Google Sheets...</p>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  // ==== Hide Loading Indicator ====
+  function hideLoadingIndicator() {
+    const loader = document.getElementById('loadingIndicator');
+    if (loader) loader.remove();
+  }
+
+  // ==== Update Dashboard After Data Load ====
+  function updateDashboard() {
+    // TAMBAHKAN INI: Mulai proses loading data OPL
+    fetchOPLData(); 
+    
+    calculateStats();
+    initializeFilterOptions();
+    displayMachineStatus(getFilteredMachines());
+    renderIncompleteDocuments();
+    renderExpiringSOPTable();
+    renderMachineDetails();
+    updateLastUpdatedTime();
+  }
+
+  // ==== Calculate Stats ====
+  function calculateStats() {
+    // Total mesin = jumlah mesin unik (sudah dihandle di processSheetData dengan Map berdasarkan nama mesin)
+    const total = globalData.machines.length;
+    
+    // Count machines dengan dokumen lengkap vs belum lengkap
+    // Cek SETIAP dokumen di mesin, jika SEMUA lengkap = mesin lengkap
+    // Jika ADA SATU SAJA yang tidak lengkap = mesin tidak lengkap
+    let complete = 0;
+    let incomplete = 0;
+    
+    globalData.machines.forEach(machine => {
+      // Hitung dokumen yang status-nya lengkap
+      const allDocsComplete = machine.documents.every(doc => doc.status === 'complete');
+      
+      if (allDocsComplete && machine.documents.length > 0) {
+        complete++;
+      } else {
+        incomplete++;
+      }
+    });
+    
+    // Calculate expiring SOPs (90 hari menuju review date dari kolom J)
+    const today = new Date();
+    const next90Days = new Date(today);
+    next90Days.setDate(today.getDate() + 90);
+    
+    let expiredCount = 0;
+    globalData.machines.forEach(machine => {
+      machine.documents.forEach(doc => {
+        if (doc.type === 'sop' && doc.expiryDate) {
+          const expiry = new Date(doc.expiryDate);
+          if (expiry >= today && expiry <= next90Days) {
+            expiredCount++;
+          }
+        }
+      });
+    });
+
+    // Hitung progress
+    const progress = total > 0 ? Math.round((complete / total) * 100) : 0;
+
+    // ==== Update Nilai di Card ====
+    document.getElementById("totalMachines").textContent = total;
+    document.getElementById("completeDocs").textContent = complete;
+    document.getElementById("incompleteDocs").textContent = incomplete;
+    document.getElementById("expiredSOP").textContent = expiredCount;
+    document.getElementById("progressPercentage").textContent = progress + "%";
+
+    // ==== Tampilkan Donut Chart ====
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (window.progressChartInstance) {
+      window.progressChartInstance.destroy();
+    }
+    
+    window.progressChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Lengkap', 'Kurang'],
+        datasets: [{
+          data: [complete, incomplete],
+          backgroundColor: ['#22C55E', '#EF4444'],
+          borderWidth: 0,
+          cutout: '75%'
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        animation: { duration: 1200 },
+      }
+    });
+  }
+
+  // ==== Multi-Select Filter State ====
+  const filterState = {
+    rooms: [],
+    processes: [],
+    machines: [],
+    incompleteDocTypes: [],
+    incompleteMachines: [],
+    detailRooms: [],
+    detailProcesses: [],
+    detailMachines: []
+  };
+
+  // ==== Pagination State ====
+  const paginationState = {
+    machine: {
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 1
+    },
+    incomplete: {
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 1
+    },
+    detail: {
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 1
+    },
+    history: {
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 1
+    }
+  };
+
+  // ==== Change History Data ====
+  let changeHistoryData = [];
+  let filteredHistoryData = [];
+
+  // ==== Toggle Multi-Select Dropdown ====
+  function toggleMultiSelectDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const allDropdowns = document.querySelectorAll('[id$="Filter"]');
+    
+    allDropdowns.forEach(d => {
+      if (d.id !== dropdownId && !d.classList.contains('hidden')) {
+        d.classList.add('hidden');
+      }
+    });
+    
+    dropdown.classList.toggle('hidden');
+  }
+
+  // Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+  const isDropdownButton = event.target.closest('button[onclick*="toggleMultiSelectDropdown"]');
+  const isInsideDropdown = event.target.closest('[id$="Filter"]');
+  
+  if (!isDropdownButton && !isInsideDropdown) {
+    const allDropdowns = document.querySelectorAll('[id$="Filter"] [class*="absolute"]');
+    allDropdowns.forEach(d => d.classList.add('hidden'));
+  }
+});
+
+  // ==== Filter Dropdown Options (Search) ====
+  function filterDropdownOptions(dropdownId, searchBarId) {
+    const searchValue = document.getElementById(searchBarId).value.toLowerCase();
+    const optionsContainer = document.getElementById(dropdownId + 'Options');
+    const checkboxes = optionsContainer.querySelectorAll('.filter-checkbox-item');
+    
+    checkboxes.forEach(item => {
+      const label = item.textContent.toLowerCase();
+      if (label.includes(searchValue)) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // ==== Initialize Filter Options ====
+  function initializeFilterOptions() {
+    // Extract unique values
+    const rooms = [...new Set(globalData.machines.map(m => m.room))].filter(r => r);
+    const processes = [...new Set(globalData.machines.map(m => m.process))].filter(p => p);
+    const machines = [...new Set(globalData.machines.map(m => m.machineName))].filter(m => m);
+    const docTypes = ['SOP', 'LOGBOOK', 'HIRA', 'AIIA', 'OPL'];
+
+    // Populate Room Filter
+    populateFilterOptions('roomFilterOptions', rooms, 'rooms');
+    
+    // Populate Process Filter
+    populateFilterOptions('processFilterOptions', processes, 'processes');
+    
+    // Populate Machine Filter (Status Dokumen)
+    populateFilterOptions('machineFilterOptions', machines, 'machines');
+
+    // Populate Incomplete Doc Type Filter
+    populateFilterOptions('incompleteDocFilterOptions', docTypes, 'incompleteDocTypes');
+
+    // Populate Incomplete Machine Filter
+    populateFilterOptions('incompleteMachineFilterOptions', machines, 'incompleteMachines');
+
+    // Populate Detail Filters
+    populateFilterOptions('detailRoomFilterOptions', rooms, 'detailRooms');
+    populateFilterOptions('detailProcessFilterOptions', processes, 'detailProcesses');
+    populateFilterOptions('detailMachineFilterOptions', machines, 'detailMachines');
+  }
+
+  // ==== Populate Filter Options ====
+  function populateFilterOptions(containerId, options, filterKey) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    
+    options.forEach(option => {
+      const div = document.createElement('div');
+      div.className = 'filter-checkbox-item flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer';
+      div.innerHTML = `
+        <input type="checkbox" id="${filterKey}_${option}" value="${option}" 
+               onchange="updateFilter('${filterKey}', '${option}')"
+               class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+        <label for="${filterKey}_${option}" class="text-sm text-gray-700 cursor-pointer flex-1">${option}</label>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ==== Update Filter State ====
+  function updateFilter(filterKey, value) {
+    const checkbox = document.getElementById(`${filterKey}_${value}`);
+    
+    if (checkbox.checked) {
+      if (!filterState[filterKey].includes(value)) {
+        filterState[filterKey].push(value);
+      }
+    } else {
+      filterState[filterKey] = filterState[filterKey].filter(v => v !== value);
+    }
+
+    // Update label
+    updateFilterLabel(filterKey);
+
+    // Re-render based on filter type
+    if (filterKey === 'rooms' || filterKey === 'processes' || filterKey === 'machines') {
+      paginationState.machine.currentPage = 1;
+      displayMachineStatus(getFilteredMachines());
+    } else if (filterKey === 'incompleteDocTypes' || filterKey === 'incompleteMachines') {
+      paginationState.incomplete.currentPage = 1;
+      renderIncompleteDocuments();
+    } else if (filterKey === 'detailRooms' || filterKey === 'detailProcesses' || filterKey === 'detailMachines') {
+      paginationState.detail.currentPage = 1;
+      renderMachineDetails();
+    }
+  }
+
+  // ==== Update Filter Label ====
+  function updateFilterLabel(filterKey) {
+    let labelId, defaultText;
+    
+    if (filterKey === 'rooms') {
+      labelId = 'roomFilterLabel';
+      defaultText = 'Pilih Ruangan';
+    } else if (filterKey === 'processes') {
+      labelId = 'processFilterLabel';
+      defaultText = 'Pilih Proses';
+    } else if (filterKey === 'machines') {
+      labelId = 'machineFilterLabel';
+      defaultText = 'Pilih Mesin';
+    } else if (filterKey === 'incompleteDocTypes') {
+      labelId = 'incompleteDocFilterLabel';
+      defaultText = 'Pilih Jenis Dokumen';
+    } else if (filterKey === 'incompleteMachines') {
+      labelId = 'incompleteMachineFilterLabel';
+      defaultText = 'Pilih Mesin';
+    } else if (filterKey === 'detailRooms') {
+      labelId = 'detailRoomFilterLabel';
+      defaultText = 'Pilih Ruangan';
+    } else if (filterKey === 'detailProcesses') {
+      labelId = 'detailProcessFilterLabel';
+      defaultText = 'Pilih Proses';
+    } else if (filterKey === 'detailMachines') {
+      labelId = 'detailMachineFilterLabel';
+      defaultText = 'Pilih Mesin';
+    }
+
+    const label = document.getElementById(labelId);
+    const count = filterState[filterKey].length;
+    
+    if (count === 0) {
+      label.textContent = defaultText;
+      label.classList.remove('font-semibold', 'text-blue-600');
+      label.classList.add('text-gray-700');
+    } else {
+      label.textContent = `${count} dipilih`;
+      label.classList.add('font-semibold', 'text-blue-600');
+      label.classList.remove('text-gray-700');
+    }
+  }
+
+  // ==== Get Filtered Machines ====
+  function getFilteredMachines() {
+    return globalData.machines.filter(machine => {
+      const roomMatch = filterState.rooms.length === 0 || filterState.rooms.includes(machine.room);
+      const processMatch = filterState.processes.length === 0 || filterState.processes.includes(machine.process);
+      const machineMatch = filterState.machines.length === 0 || filterState.machines.includes(machine.machineName);
+      
+      return roomMatch && processMatch && machineMatch;
+    });
+  }
+
+  // ==== Reset Machine Filters ====
+  function resetMachineFilters() {
+    filterState.rooms = [];
+    filterState.processes = [];
+    filterState.machines = [];
+
+    // Uncheck all checkboxes
+    document.querySelectorAll('#roomFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#processFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#machineFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+    // Reset search bars
+    document.getElementById('roomSearchBar').value = '';
+    document.getElementById('processSearchBar').value = '';
+    document.getElementById('machineSearchBar').value = '';
+
+    // Reset labels
+    updateFilterLabel('rooms');
+    updateFilterLabel('processes');
+    updateFilterLabel('machines');
+
+    // Show all options
+    filterDropdownOptions('roomFilter', 'roomSearchBar');
+    filterDropdownOptions('processFilter', 'processSearchBar');
+    filterDropdownOptions('machineFilter', 'machineSearchBar');
+
+    // Reset pagination
+    paginationState.machine.currentPage = 1;
+
+    // Re-render
+    displayMachineStatus(globalData.machines);
+  }
+
+  // ==== Render Status per Mesin ====
+  function displayMachineStatus(data) {
+    const container = document.getElementById("machineStatusList");
+    container.innerHTML = "";
+
+    if (data.length === 0) {
+      container.innerHTML = '<p class="text-center text-gray-500 py-8">Tidak ada mesin yang sesuai filter.</p>';
+      paginationState.machine.totalPages = 1;
+      updateMachinePaginationUI();
+      return;
+    }
+
+    // Calculate pagination
+    const pageSize = paginationState.machine.pageSize;
+    const currentPage = paginationState.machine.currentPage;
+    const totalPages = Math.ceil(data.length / pageSize);
+    paginationState.machine.totalPages = totalPages;
+
+    // Ensure current page is valid
+    if (currentPage > totalPages) {
+      paginationState.machine.currentPage = totalPages;
+    }
+
+    // Get paginated data
+    const startIndex = (paginationState.machine.currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = data.slice(startIndex, endIndex);
+
+    paginatedData.forEach(machine => {
+      // Status mesin: SEMUA dokumen harus lengkap baru status lengkap
+      const allDocsComplete = machine.documents.every(doc => doc.status === 'complete');
+      const machineStatus = (allDocsComplete && machine.documents.length > 0) ? "Lengkap" : "Belum Lengkap";
+
+      const machineCard = document.createElement("div");
+      machineCard.className =
+        "bg-white border border-gray-200 rounded-2xl p-4 shadow-sm transition hover:shadow-md";
+
+      machineCard.innerHTML = `
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <h3 class="font-semibold text-gray-800">${machine.machineName}</h3>
+            <p class="text-sm text-gray-500">${machine.room} - ${machine.process}</p>
+          </div>
+          <div class="px-3 py-1 rounded-full text-sm font-semibold ${
+            machineStatus === "Lengkap"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }">${machineStatus}</div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-3">
+          ${renderDocumentIcons(machine.documents)}
+        </div>
+
+        <button onclick="toggleDetail('${machine.machineName.replace(/'/g, "\\'")}', this)"
+          class="text-sm text-blue-600 font-medium hover:underline focus:outline-none">
+          Lihat Detail
+        </button>
+
+        <div id="detail-${machine.machineName.replace(/[^a-zA-Z0-9]/g, '_')}" class="hidden mt-4"></div>
+      `;
+      container.appendChild(machineCard);
+    });
+
+    updateMachinePaginationUI();
+  }
+
+  // ==== Update Machine Pagination UI ====
+  function updateMachinePaginationUI() {
+    const { currentPage, totalPages } = paginationState.machine;
+    document.getElementById('machinePageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    const prevBtn = document.getElementById('machinePrevBtn');
+    const nextBtn = document.getElementById('machineNextBtn');
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  // ==== Change Machine Page ====
+  function changeMachinePage(direction) {
+    if (direction === 'prev' && paginationState.machine.currentPage > 1) {
+      paginationState.machine.currentPage--;
+    } else if (direction === 'next' && paginationState.machine.currentPage < paginationState.machine.totalPages) {
+      paginationState.machine.currentPage++;
+    }
+    displayMachineStatus(getFilteredMachines());
+  }
+
+  // ==== Change Machine Page Size ====
+  function changeMachinePageSize() {
+    paginationState.machine.pageSize = parseInt(document.getElementById('machinePageSize').value);
+    paginationState.machine.currentPage = 1;
+    displayMachineStatus(getFilteredMachines());
+  }
+
+  // ==== Render Icon Dokumen ====
+  function renderDocumentIcons(docs) {
+    const types = ["sop", "logbook", "hira", "aiia", "opl"];
+    return types
+      .map(type => {
+        const found = docs.find(d => d.type === type && d.status === "complete");
+        const color = found
+          ? "bg-green-100 text-green-700"
+          : "bg-red-100 text-red-700";
+        return `<span class="px-3 py-1 rounded-lg text-xs font-semibold ${color}">${type.toUpperCase()}</span>`;
+      })
+      .join("");
+  }
+
+  // ==== Get Label for User Level ====
+  function getLevelLabel(level) {
+    switch(level) {
+      case 1: return 'Viewer';
+      case 2: return 'User';
+      case 3: return 'Administrator';
+      default: return 'Viewer';
+    }
+  }
+
+  // ==== Toggle Detail Dokumen ====
+  function toggleDetail(namaMesin, button) {
+    const sanitizedName = namaMesin.replace(/[^a-zA-Z0-9]/g, '_');
+    const detailEl = document.getElementById(`detail-${sanitizedName}`);
+    if (detailEl.classList.contains("hidden")) {
+      detailEl.innerHTML = renderDetailTable(namaMesin);
+      detailEl.classList.remove("hidden");
+      button.textContent = "Sembunyikan Detail";
+    } else {
+      detailEl.classList.add("hidden");
+      button.textContent = "Lihat Detail";
+    }
+  }
+
+  // ==== Render Tabel Detail Dokumen ====
+  function renderDetailTable(namaMesin) {
+    const mesin = globalData.machines.find(m => m.machineName === namaMesin);
+    if (!mesin) return "<p class='text-center text-gray-500 py-3'>Data tidak ditemukan</p>";
+
+    // Tampilkan hanya 1 dokumen per jenis: SOP, Logbook, HIRA, AIIA, OPL
+    const docTypes = ['sop', 'logbook', 'hira', 'aiia', 'opl'];
+    const displayedDocs = [];
+    
+    docTypes.forEach(type => {
+      const doc = mesin.documents.find(d => d.type === type);
+      if (doc) {
+        displayedDocs.push(doc);
+      }
+    });
+
+    if (displayedDocs.length === 0) {
+      return '<p class="text-center text-gray-500 py-3">Tidak ada dokumen.</p>';
+    }
+
+    // Check if user has edit permission (ONLY Level 3 Administrator)
+    const hasEditPermission = hasPermission(3);
+    const actionColumnHeader = hasEditPermission 
+      ? '<th class="p-3 text-center text-xs font-semibold text-gray-700 uppercase">Action</th>' 
+      : '';
+
+    const rows = displayedDocs
+      .map(
+        d => {
+          const actionButton = hasEditPermission
+            ? `<td class="p-3 text-center">
+                <button onclick='showUpdateDocumentModalFromDetail("${namaMesin}", "${d.type.toLowerCase()}", "${d.docNumber || ''}", "${d.status}")' 
+                        class="px-3 py-1 ${d.status === 'complete' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg text-xs font-medium transition">
+                  ${d.status === 'complete' ? 'Mark Incomplete' : 'Mark Complete'}
+                </button>
+               </td>`
+            : '';
+          
+          return `
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-3 font-medium text-gray-700">${d.type.toUpperCase()}</td>
+              <td class="p-3 text-gray-700">${d.title || '-'}</td>
+              <td class="p-3 text-gray-700">${d.docNumber || '-'}</td>
+              <td class="p-3 text-center text-gray-700">${d.rev || '0'}</td>
+              <td class="p-3 text-center">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                  d.status === "complete" 
+                    ? "bg-green-100 text-green-700" 
+                    : "bg-red-100 text-red-700"
+                }">${d.status === "complete" ? "Lengkap" : "Belum Lengkap"}</span>
+              </td>
+              ${actionButton}
+            </tr>`;
+        }
+      )
+      .join("");
+
+    return `
+      <div class="overflow-x-auto mt-4 border border-gray-200 rounded-lg">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
+            <tr>
+              <th class="p-3 text-left text-xs font-semibold text-gray-700 uppercase">Jenis Dokumen</th>
+              <th class="p-3 text-left text-xs font-semibold text-gray-700 uppercase">Nama Dokumen</th>
+              <th class="p-3 text-left text-xs font-semibold text-gray-700 uppercase">Nomor</th>
+              <th class="p-3 text-center text-xs font-semibold text-gray-700 uppercase">Rev</th>
+              <th class="p-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
+              ${actionColumnHeader}
+            </tr>
+          </thead>
+          <tbody class="bg-white">${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  // ==== Show Update Document Modal from Detail ====
+  function showUpdateDocumentModalFromDetail(machine, docType, docNumber, currentStatus) {
+    // ONLY Level 3 Administrator can update documents
+    if (!hasPermission(3)) {
+      showNotification('Hanya Administrator yang dapat mengakses fitur ini!', 'error');
+      return;
+    }
+    
+    document.getElementById('updateDocMachine').value = machine;
+    document.getElementById('updateDocType').value = docType;
+    document.getElementById('updateDocNumber').value = docNumber;
+    document.getElementById('updateDocMachineDisplay').textContent = machine;
+    document.getElementById('updateDocTypeDisplay').textContent = docType.toUpperCase();
+    document.getElementById('updateDocNumberDisplay').textContent = docNumber || '-';
+    
+    // Toggle status
+    const newStatus = currentStatus === 'complete' ? 'incomplete' : 'complete';
+    document.getElementById('updateDocStatus').value = newStatus;
+    
+    document.getElementById('updateDocumentModal').classList.remove('hidden');
+  }
+
+  // ==== Get All Incomplete Documents ====
+  function getAllIncompleteDocuments() {
+    const incompleteDocs = [];
+
+    globalData.machines.forEach(machine => {
+      machine.documents.forEach(doc => {
+        // Jika kolom K (status) tidak lengkap, masukkan ke list
+        if (doc.status === 'incomplete') {
+          // Apply filters
+          const docTypeMatch = filterState.incompleteDocTypes.length === 0 || 
+                               filterState.incompleteDocTypes.includes(doc.type.toUpperCase());
+          const machineMatch = filterState.incompleteMachines.length === 0 || 
+                              filterState.incompleteMachines.includes(machine.machineName);
+
+          if (docTypeMatch && machineMatch) {
+            incompleteDocs.push({
+              type: doc.type.toUpperCase(),          // Kolom E
+              title: doc.title || '-',               // Kolom G
+              number: doc.docNumber || '-',          // Kolom F
+              revision: doc.rev || '-',              // Kolom H
+              machine: machine.machineCode,          // Kolom D (JENIS MESIN)
+              machineName: machine.machineName,      // Nama mesin lengkap untuk update
+              room: machine.room                     // Kolom B
+            });
+          }
+        }
+      });
+    });
+
+    return incompleteDocs;
+  }
+
+  // ==== Render Incomplete Documents ====
+  function renderIncompleteDocuments() {
+    const tableBody = document.getElementById('incompleteDocumentsTable');
+    tableBody.innerHTML = '';
+
+    const incompleteDocs = getAllIncompleteDocuments();
+
+    const colspanCount = hasPermission(3) ? 7 : 6;
+    
+    if (incompleteDocs.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center text-gray-500 py-4">Tidak ada dokumen belum lengkap.</td></tr>`;
+      paginationState.incomplete.totalPages = 1;
+      updateIncompletePaginationUI();
+      return;
+    }
+
+    // Calculate pagination
+    const pageSize = paginationState.incomplete.pageSize;
+    const currentPage = paginationState.incomplete.currentPage;
+    const totalPages = Math.ceil(incompleteDocs.length / pageSize);
+    paginationState.incomplete.totalPages = totalPages;
+
+    // Ensure current page is valid
+    if (currentPage > totalPages) {
+      paginationState.incomplete.currentPage = totalPages;
+    }
+
+    // Get paginated data
+    const startIndex = (paginationState.incomplete.currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedDocs = incompleteDocs.slice(startIndex, endIndex);
+
+    paginatedDocs.forEach(doc => {
+      // Admin update button
+      const updateButton = hasPermission(3) 
+        ? `<td class="px-6 py-2 text-sm text-center">
+             <button onclick='showUpdateDocumentModal("${doc.machineName}", "${doc.type.toLowerCase()}", "${doc.number}", "incomplete")' 
+                     class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-medium">
+               Mark Complete
+             </button>
+           </td>`
+        : '';
+
+      const row = `<tr>
+        <td class="px-6 py-2 text-sm text-gray-700">${doc.type}</td>
+        <td class="px-6 py-2 text-sm text-gray-700">${doc.title}</td>
+        <td class="px-6 py-2 text-sm text-gray-700">${doc.number}</td>
+        <td class="px-6 py-2 text-sm text-gray-700 text-center">${doc.revision}</td>
+        <td class="px-6 py-2 text-sm text-gray-700">${doc.machine}</td>
+        <td class="px-6 py-2 text-sm text-gray-700">${doc.room}</td>
+        ${updateButton}
+      </tr>`;
+      tableBody.insertAdjacentHTML('beforeend', row);
+    });
+
+    updateIncompletePaginationUI();
+  }
+
+  // ==== Update Incomplete Pagination UI ====
+  function updateIncompletePaginationUI() {
+    const { currentPage, totalPages } = paginationState.incomplete;
+    document.getElementById('incompletePageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    const prevBtn = document.getElementById('incompletePrevBtn');
+    const nextBtn = document.getElementById('incompleteNextBtn');
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  // ==== Change Incomplete Page ====
+  function changeIncompletePage(direction) {
+    if (direction === 'prev' && paginationState.incomplete.currentPage > 1) {
+      paginationState.incomplete.currentPage--;
+    } else if (direction === 'next' && paginationState.incomplete.currentPage < paginationState.incomplete.totalPages) {
+      paginationState.incomplete.currentPage++;
+    }
+    renderIncompleteDocuments();
+  }
+
+  // ==== Change Incomplete Page Size ====
+  function changeIncompletePageSize() {
+    paginationState.incomplete.pageSize = parseInt(document.getElementById('incompletePageSize').value);
+    paginationState.incomplete.currentPage = 1;
+    renderIncompleteDocuments();
+  }
+
+  // Export
+  function exportIncompleteDocuments(type) {
+    const allDocs = getAllIncompleteDocuments();
+    
+    if (allDocs.length === 0) {
+      showNotification('Tidak ada data untuk diexport!', 'error');
+      return;
+    }
+
+    const data = [['Jenis Dokumen', 'Judul Dokumen', 'Nomor Dokumen', 'Revisi', 'Mesin', 'Ruangan']];
+    allDocs.forEach(doc => {
+      data.push([doc.type, doc.title, doc.number, doc.revision, doc.machine, doc.room]);
+    });
+
+    if (type === 'csv') {
+      exportToCSV(data);
+    } else if (type === 'pdf') {
+      exportToPDF(data);
+    }
+  }
+
+  // ==== Export to CSV ====
+  function exportToCSV(data) {
+    const csvContent = data.map(row => 
+      row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.download = `Dokumen_Belum_Lengkap_${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification('CSV berhasil didownload!', 'success');
+  }
+
+  // ==== Export to PDF ====
+  function exportToPDF(data) {
+    const timestamp = new Date().toLocaleString('id-ID', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const printWindow = window.open('', '_blank');
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Dokumen Belum Lengkap - Dashboard OMOB</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            color: #333;
+            background: #fff;
+          }
+          
+          .header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+          }
+          
+          .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+          }
+          
+          .info-box {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 10px;
+          }
+          
+          .info-box .label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+          }
+          
+          .info-box .value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
+            margin-left: 5px;
+          }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+          
+          thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+          
+          thead th {
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          
+          tbody tr:hover {
+            background-color: #f3f4f6;
+          }
+          
+          tbody td {
+            padding: 12px;
+            font-size: 13px;
+            color: #374151;
+          }
+          
+          .doc-type {
+            font-weight: 600;
+            color: #667eea;
+          }
+          
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+          
+          .summary {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+          }
+          
+          .summary .count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            display: inline-block;
+          }
+          
+          .summary .text {
+            font-size: 14px;
+            color: #555;
+            display: inline-block;
+            margin-left: 10px;
+          }
+          
+          @media print {
+            body {
+              padding: 20px;
+            }
+            
+            .header h1 {
+              font-size: 24px;
+            }
+            
+            table {
+              font-size: 11px;
+            }
+            
+            thead th {
+              padding: 10px 8px;
+            }
+            
+            tbody td {
+              padding: 8px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📋 Laporan Dokumen Belum Lengkap</h1>
+          <div class="subtitle">Dashboard OMOB - Monitoring Dokumen Mesin</div>
+          <div class="info-box">
+            <span class="label">Tanggal Export:</span>
+            <span class="value">${timestamp}</span>
+          </div>
+        </div>
+        
+        <div class="summary">
+          <span class="count">${data.length - 1}</span>
+          <span class="text">dokumen belum lengkap ditemukan</span>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              ${data[0].map(header => `<th>${header}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${data.slice(1).map(row => `
+              <tr>
+                <td class="doc-type">${row[0]}</td>
+                <td>${row[1]}</td>
+                <td>${row[2]}</td>
+                <td>${row[3]}</td>
+                <td>${row[4]}</td>
+                <td>${row[5]}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          <p><strong>Dashboard OMOB</strong> | Sistem Monitoring Dokumen Mesin Real-time</p>
+          <p style="margin-top: 5px;">Dokumen ini digenerate secara otomatis oleh sistem</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    printWindow.onload = function() {
+      printWindow.print();
+      showNotification('PDF siap untuk didownload!', 'success');
+    };
+  }
+
+  // ==== Show Notification ====
+  function showNotification(message, type) {
+    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+    const notif = document.createElement('div');
+    notif.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50`;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+  }
+
+  // ==== Navigation Function ====
+  function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page-section').forEach(section => {
+      section.classList.remove('active');
+    });
+
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('nav-active');
+    });
+
+    // Show selected page
+    const selectedPage = document.getElementById(pageName + 'Page');
+    if (selectedPage) {
+      selectedPage.classList.add('active');
+    }
+
+    // Add active class to clicked button
+    const activeBtn = document.querySelector(`[data-page="${pageName}"]`);
+    if (activeBtn) {
+      activeBtn.classList.add('nav-active');
+    }
+  }
+
+  // ==== Refresh Dashboard ====
+  function refreshDashboard() {
+    fetchSheetData();
+  }
+
+  // ==== Sync to Cloud ====
+  function syncToCloud() {
+    fetchSheetData();
+  }
+
+  // ==== Update Last Updated Time ====
+  function updateLastUpdatedTime() {
+    const now = new Date();
+    const formatted = now.toLocaleDateString('id-ID', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    document.getElementById('lastUpdate').textContent = formatted;
+  }
+
+  // ==== Toggle SOP Calendar ====
+  function toggleSOPCalendar() {
+    const calendarContainer = document.getElementById('sopCalendarContainer');
+    calendarContainer.classList.toggle('hidden');
+    if (!calendarContainer.classList.contains('hidden')) {
+      renderSOPCalendar();
+    }
+  }
+
+  // ==== Render SOP Calendar ====
+  function renderSOPCalendar() {
+    const container = document.getElementById('sopCalendar');
+    container.innerHTML = '';
+
+    const today = new Date();
+    const next90Days = new Date(today);
+    next90Days.setDate(today.getDate() + 90);
+
+    // ambil semua dokumen SOP dengan expiry date dalam 90 hari
+    const expiringSOPs = [];
+    globalData.machines.forEach(machine => {
+      machine.documents.forEach(doc => {
+        if (doc.type === 'sop' && doc.expiryDate) {
+          const expiry = new Date(doc.expiryDate);
+          if (expiry >= today && expiry <= next90Days) {
+            expiringSOPs.push({
+              machine: machine.machineName,
+              title: doc.title,
+              number: doc.docNumber,
+              expiry: expiry
+            });
+          }
+        }
+      });
+    });
+
+    // buat kalender sederhana 3 bulan
+    const monthsToShow = 3;
+    let calendarHTML = '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">';
+    
+    for (let i = 0; i < monthsToShow; i++) {
+      const currentMonth = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const monthName = currentMonth.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+      const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+      const firstDay = currentMonth.getDay();
+
+      calendarHTML += `
+        <div class="p-4 border rounded-lg bg-white shadow-sm">
+          <h5 class="text-center font-semibold mb-3 text-gray-700">${monthName}</h5>
+          <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+            <div class="font-semibold text-gray-600 p-1">Min</div>
+            <div class="font-semibold text-gray-600 p-1">Sen</div>
+            <div class="font-semibold text-gray-600 p-1">Sel</div>
+            <div class="font-semibold text-gray-600 p-1">Rab</div>
+            <div class="font-semibold text-gray-600 p-1">Kam</div>
+            <div class="font-semibold text-gray-600 p-1">Jum</div>
+            <div class="font-semibold text-gray-600 p-1">Sab</div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-xs">
+      `;
+
+      // Empty cells before first day
+      for (let j = 0; j < firstDay; j++) {
+        calendarHTML += '<div class="p-2"></div>';
+      }
+
+      // Days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const thisDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+        let cellClass = 'p-2 rounded cursor-default';
+
+        if (thisDate.toDateString() === today.toDateString()) {
+          cellClass += ' bg-blue-300 text-white font-bold';
+        }
+
+        let hasExpiry = false;
+        let sopForThisDate = null;
+        expiringSOPs.forEach(sop => {
+          if (sop.expiry.toDateString() === thisDate.toDateString()) {
+            hasExpiry = true;
+            sopForThisDate = sop;
+            const diff = Math.ceil((sop.expiry - today) / (1000 * 60 * 60 * 24));
+            if (diff <= 7) {
+              cellClass = 'p-2 rounded cursor-pointer hover:ring-2 hover:ring-red-600 bg-red-400 text-white font-bold';
+            } else {
+              cellClass = 'p-2 rounded cursor-pointer hover:ring-2 hover:ring-yellow-600 bg-yellow-300 font-semibold';
+            }
+          }
+        });
+
+        if (sopForThisDate) {
+          const sopData = JSON.stringify({
+            machine: sopForThisDate.machine,
+            title: sopForThisDate.title,
+            number: sopForThisDate.number,
+            expiry: sopForThisDate.expiry.toISOString()
+          }).replace(/"/g, '&quot;');
+          calendarHTML += `<div class="${cellClass}" onclick='showSOPFromCalendar(${sopData})'>${day}</div>`;
+        } else {
+          calendarHTML += `<div class="${cellClass}">${day}</div>`;
+        }
+      }
+
+      calendarHTML += '</div></div>';
+    }
+    
+    calendarHTML += '</div>';
+
+    // legenda warna
+    calendarHTML += `
+      <div class="flex justify-center mt-6 space-x-6 text-sm">
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-blue-300 rounded"></div>
+          <span class="text-gray-600">Hari Ini</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-red-400 rounded"></div>
+          <span class="text-gray-600">SOP Expired (≤7 hari)</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-yellow-300 rounded"></div>
+          <span class="text-gray-600">SOP Expired (8–90 hari)</span>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = calendarHTML;
+  }
+
+  // ==== Global state for calendar navigation ====
+  const calendarState = {
+    currentViewMonth: new Date()
+  };
+
+  // ==== Show SOP Detail Modal ====
+  function showSOPDetailModal(machine, title, number, expiryDate) {
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+    
+    let statusClass = '';
+    let statusText = '';
+    
+    if (daysLeft <= 7) {
+      statusClass = 'bg-red-100 text-red-700';
+      statusText = 'Kritis';
+    } else if (daysLeft <= 30) {
+      statusClass = 'bg-yellow-100 text-yellow-700';
+      statusText = 'Perhatian';
+    } else {
+      statusClass = 'bg-blue-100 text-blue-700';
+      statusText = 'Normal';
+    }
+
+    const modalHTML = `
+      <div id="sopDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="closeSOPModal(event)">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+          <!-- Header -->
+          <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center">
+            <div>
+              <h3 class="text-xl font-bold">Detail SOP</h3>
+              <p class="text-sm text-blue-100 mt-1">${title}</p>
+            </div>
+            <button onclick="closeSOPModal()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <!-- Info Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Mesin</p>
+                <p class="text-lg font-semibold text-gray-800">${machine}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Nomor Dokumen</p>
+                <p class="text-lg font-semibold text-gray-800">${number}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Tanggal Expired</p>
+                <p class="text-lg font-semibold text-gray-800">${expiry.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Status</p>
+                <div class="flex items-center space-x-3">
+                  <span class="px-3 py-1 rounded-full text-sm font-semibold ${statusClass}">${statusText}</span>
+                  <span class="text-lg font-bold ${daysLeft <= 30 ? 'text-red-600' : 'text-gray-700'}">${daysLeft} hari lagi</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Calendar Navigation -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-semibold text-gray-800">Kalender Expiry</h4>
+                <div class="flex items-center space-x-2">
+                  <button onclick="changeModalCalendarMonth(-1)" class="p-2 bg-white hover:bg-gray-100 rounded-lg shadow-sm transition">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                  </button>
+                  <span class="px-4 py-2 bg-white rounded-lg shadow-sm font-semibold text-gray-700 min-w-[180px] text-center" id="modalCalendarMonth"></span>
+                  <button onclick="changeModalCalendarMonth(1)" class="p-2 bg-white hover:bg-gray-100 rounded-lg shadow-sm transition">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div id="modalCalendarContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('sopDetailModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Set calendar to expiry month
+    calendarState.currentViewMonth = new Date(expiry.getFullYear(), expiry.getMonth(), 1);
+    renderModalCalendar(expiryDate);
+  }
+
+  // ==== Change Modal Calendar Month ====
+  function changeModalCalendarMonth(delta) {
+    calendarState.currentViewMonth.setMonth(calendarState.currentViewMonth.getMonth() + delta);
+    renderModalCalendar(document.getElementById('sopDetailModal').dataset.expiryDate);
+  }
+
+  // ==== Render Modal Calendar ====
+  function renderModalCalendar(targetExpiryDate) {
+    const container = document.getElementById('modalCalendarContent');
+    const monthLabel = document.getElementById('modalCalendarMonth');
+    
+    // Store expiry date in modal for navigation
+    document.getElementById('sopDetailModal').dataset.expiryDate = targetExpiryDate;
+
+    const viewMonth = calendarState.currentViewMonth;
+    const monthName = viewMonth.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+    monthLabel.textContent = monthName;
+
+    const today = new Date();
+    const targetExpiry = new Date(targetExpiryDate);
+    const daysInMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
+    const firstDay = viewMonth.getDay();
+
+    let calendarHTML = `
+      <div class="bg-white rounded-lg p-4 shadow-sm">
+        <div class="grid grid-cols-7 gap-2 text-center text-xs mb-3">
+          <div class="font-semibold text-gray-600 p-2">Min</div>
+          <div class="font-semibold text-gray-600 p-2">Sen</div>
+          <div class="font-semibold text-gray-600 p-2">Sel</div>
+          <div class="font-semibold text-gray-600 p-2">Rab</div>
+          <div class="font-semibold text-gray-600 p-2">Kam</div>
+          <div class="font-semibold text-gray-600 p-2">Jum</div>
+          <div class="font-semibold text-gray-600 p-2">Sab</div>
+        </div>
+        <div class="grid grid-cols-7 gap-2 text-center text-sm">
+    `;
+
+    // Empty cells before first day
+    for (let j = 0; j < firstDay; j++) {
+      calendarHTML += '<div class="p-3"></div>';
+    }
+
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const thisDate = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), day);
+      let cellClass = 'p-3 rounded-lg cursor-default transition';
+
+      if (thisDate.toDateString() === today.toDateString()) {
+        cellClass += ' bg-blue-400 text-white font-bold ring-2 ring-blue-600';
+      } else if (thisDate.toDateString() === targetExpiry.toDateString()) {
+        const daysLeft = Math.ceil((targetExpiry - today) / (1000 * 60 * 60 * 24));
+        if (daysLeft <= 7) {
+          cellClass += ' bg-red-500 text-white font-bold ring-2 ring-red-700 animate-pulse';
+        } else if (daysLeft <= 30) {
+          cellClass += ' bg-yellow-400 text-gray-900 font-bold ring-2 ring-yellow-600';
+        } else {
+          cellClass += ' bg-green-400 text-white font-bold ring-2 ring-green-600';
+        }
+      } else {
+        cellClass += ' bg-gray-50 text-gray-700 hover:bg-gray-100';
+      }
+
+      calendarHTML += `<div class="${cellClass}">${day}</div>`;
+    }
+
+    calendarHTML += `
+        </div>
+      </div>
+      <div class="flex justify-center mt-4 space-x-4 text-xs">
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-blue-400 rounded ring-2 ring-blue-600"></div>
+          <span class="text-gray-600">Hari Ini</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-red-500 rounded ring-2 ring-red-700"></div>
+          <span class="text-gray-600">Expired (≤7 hari)</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-yellow-400 rounded ring-2 ring-yellow-600"></div>
+          <span class="text-gray-600">Perhatian (8-30 hari)</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-4 h-4 bg-green-400 rounded ring-2 ring-green-600"></div>
+          <span class="text-gray-600">Normal (>30 hari)</span>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = calendarHTML;
+  }
+
+  // ==== Close SOP Modal ====
+  function closeSOPModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('sopDetailModal');
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  // ==== Show SOP Detail from Calendar Click ====
+  function showSOPFromCalendar(sopData) {
+    showSOPDetailModal(sopData.machine, sopData.title, sopData.number, sopData.expiry);
+  }
+
+    console.log("Current User:", currentUser);
+console.log("Permission 2?", hasPermission(2));
+
+  // ==== Render Expiring SOP Table ====
+  function renderExpiringSOPTable() {
+    const tableBody = document.getElementById('expiringSOPTable');
+    tableBody.innerHTML = '';
+
+    const today = new Date();
+    const next90Days = new Date(today);
+    next90Days.setDate(today.getDate() + 90);
+
+    const expiringSOPs = [];
+    globalData.machines.forEach(machine => {
+      machine.documents.forEach(doc => {
+        if (doc.type === 'sop' && doc.expiryDate) {
+          const expiry = new Date(doc.expiryDate);
+          if (expiry >= today && expiry <= next90Days) {
+            expiringSOPs.push({
+              machine: machine.machineName,
+              title: doc.title,
+              number: doc.docNumber,
+              revision: doc.rev,
+              expiry: expiry,
+              expiryDate: doc.expiryDate
+            });
+          }
+        }
+      });
+    });
+
+    if (expiringSOPs.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Tidak ada SOP yang akan expired dalam 90 hari ke depan.</td></tr>';
+      return;
+    }
+
+    // Sort by expiry date (closest first)
+    expiringSOPs.sort((a, b) => a.expiry - b.expiry);
+
+    expiringSOPs.forEach(sop => {
+      const daysLeft = Math.ceil((sop.expiry - today) / (1000 * 60 * 60 * 24));
+      const formattedDate = sop.expiry.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      let statusClass = '';
+      let statusText = '';
+      
+      if (daysLeft <= 7) {
+        statusClass = 'bg-red-100 text-red-700';
+        statusText = 'Kritis';
+      } else if (daysLeft <= 30) {
+        statusClass = 'bg-yellow-100 text-yellow-700';
+        statusText = 'Perhatian';
+      } else {
+        statusClass = 'bg-blue-100 text-blue-700';
+        statusText = 'Normal';
+      }
+
+    // Show update button for Level 2 (User/PIC SOP) and Level 3 (Admin)
+// Show update button for Level 2 (User/PIC SOP) and Level 3 (Admin)
+const updateButton = hasPermission(2) 
+  ? `<button class="update-sop-btn px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium"
+             data-machine="${encodeURIComponent(sop.machine)}"
+             data-title="${encodeURIComponent(sop.title)}"
+             data-number="${encodeURIComponent(sop.number)}"
+             data-revision="${encodeURIComponent(String(sop.revision))}"
+             data-expiry="${sop.expiryDate}">
+        Update SOP
+      </button>`
+  : '';
+
+const row = document.createElement('tr');
+row.className = 'hover:bg-gray-50 transition';
+row.innerHTML = `
+    <td class="px-6 py-4 text-sm text-gray-700">${sop.machine}</td>
+    <td class="px-6 py-4 text-sm text-gray-700">${sop.title}</td>
+    <td class="px-6 py-4 text-sm text-gray-700">${sop.number}</td>
+    <td class="px-6 py-4 text-sm text-blue-600 font-medium hover:underline cursor-pointer" id="expiry-${sop.machine.replace(/[^a-zA-Z0-9]/g, '_')}-${sop.number.replace(/[^a-zA-Z0-9]/g, '_')}">${formattedDate}</td>
+    <td class="px-6 py-4 text-sm font-semibold ${daysLeft <= 30 ? 'text-red-600' : 'text-gray-700'}">${daysLeft} hari</td>
+    <td class="px-6 py-4">
+      <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+    </td>
+    <td class="px-6 py-4 text-center">
+      ${updateButton}
+    </td>
+`;
+tableBody.appendChild(row);
+
+// Add click event for Update SOP button
+const updateBtn = row.querySelector('.update-sop-btn');
+if (updateBtn) {
+  updateBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const machine = decodeURIComponent(this.dataset.machine);
+    const title = decodeURIComponent(this.dataset.title);
+    const number = decodeURIComponent(this.dataset.number);
+    const revision = decodeURIComponent(this.dataset.revision);
+    const expiry = this.dataset.expiry;
+    showUpdateSOPModal(machine, title, number, revision, expiry);
+  });
+}
+
+// Add click event to expiry date cell
+const expiryCell = row.querySelector(`#expiry-${sop.machine.replace(/[^a-zA-Z0-9]/g, '_')}-${sop.number.replace(/[^a-zA-Z0-9]/g, '_')}`);
+expiryCell.addEventListener('click', function() {
+  showSOPDetailModal(sop.machine, sop.title, sop.number, sop.expiryDate);
+});
+    });
+  }
+
+  // ==== Reset Detail Filters ====
+  function resetDetailFilters() {
+    filterState.detailRooms = [];
+    filterState.detailProcesses = [];
+    filterState.detailMachines = [];
+
+    // Uncheck all checkboxes
+    document.querySelectorAll('#detailRoomFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#detailProcessFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#detailMachineFilterOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+    // Reset search bars
+    document.getElementById('detailRoomSearchBar').value = '';
+    document.getElementById('detailProcessSearchBar').value = '';
+    document.getElementById('detailMachineSearchBar').value = '';
+
+    // Reset labels
+    updateFilterLabel('detailRooms');
+    updateFilterLabel('detailProcesses');
+    updateFilterLabel('detailMachines');
+
+    // Show all options
+    filterDropdownOptions('detailRoomFilter', 'detailRoomSearchBar');
+    filterDropdownOptions('detailProcessFilter', 'detailProcessSearchBar');
+    filterDropdownOptions('detailMachineFilter', 'detailMachineSearchBar');
+
+    // Reset pagination
+    paginationState.detail.currentPage = 1;
+
+    // Re-render
+    renderMachineDetails();
+  }
+
+  // ==== Get Filtered Machines for Detail ====
+  function getFilteredMachinesForDetail() {
+    return globalData.machines.filter(machine => {
+      const roomMatch = filterState.detailRooms.length === 0 || filterState.detailRooms.includes(machine.room);
+      const processMatch = filterState.detailProcesses.length === 0 || filterState.detailProcesses.includes(machine.process);
+      const machineMatch = filterState.detailMachines.length === 0 || filterState.detailMachines.includes(machine.machineName);
+      
+      return roomMatch && processMatch && machineMatch;
+    });
+  }
+
+  // ==== Change Detail Page ====
+  function changeDetailPage(direction) {
+    if (direction === 'prev' && paginationState.detail.currentPage > 1) {
+      paginationState.detail.currentPage--;
+    } else if (direction === 'next' && paginationState.detail.currentPage < paginationState.detail.totalPages) {
+      paginationState.detail.currentPage++;
+    }
+    renderMachineDetails();
+  }
+
+  // ==== Change Detail Page Size ====
+  function changeDetailPageSize() {
+    paginationState.detail.pageSize = parseInt(document.getElementById('detailPageSize').value);
+    paginationState.detail.currentPage = 1;
+    renderMachineDetails();
+  }
+
+  // ==== Update Detail Pagination UI ====
+  function updateDetailPaginationUI() {
+    const { currentPage, totalPages } = paginationState.detail;
+    document.getElementById('detailPageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    const prevBtn = document.getElementById('detailPrevBtn');
+    const nextBtn = document.getElementById('detailNextBtn');
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  // ==== Export Machine Details ====
+  function exportMachineDetails(type) {
+    const filteredMachines = getFilteredMachinesForDetail();
+    
+    if (filteredMachines.length === 0) {
+      showNotification('Tidak ada data untuk diexport!', 'error');
+      return;
+    }
+
+    const data = [['Mesin', 'Kode Mesin', 'Ruangan', 'Proses', 'Jenis Dokumen', 'Nama Dokumen', 'Nomor Dokumen', 'Revisi', 'Issued Date', 'Review Date', 'Status']];
+    
+    filteredMachines.forEach(machine => {
+      machine.documents.forEach(doc => {
+        const status = doc.status === 'complete' ? 'Lengkap' : 'Belum Lengkap';
+        const issuedDate = doc.issuedDate ? new Date(doc.issuedDate).toLocaleDateString('id-ID') : '-';
+        const reviewDate = doc.reviewDate ? new Date(doc.reviewDate).toLocaleDateString('id-ID') : '-';
+        const revision = doc.rev !== undefined ? doc.rev : '0';
+        
+        data.push([
+          machine.machineName,
+          machine.machineCode,
+          machine.room,
+          machine.process,
+          doc.type.toUpperCase(),
+          doc.title,
+          doc.docNumber || '-',
+          revision,
+          issuedDate,
+          reviewDate,
+          status
+        ]);
+      });
+    });
+
+    if (type === 'csv') {
+      exportDetailToCSV(data);
+    } else if (type === 'pdf') {
+      exportDetailToPDF(data);
+    }
+  }
+
+  // ==== Export Detail to CSV ====
+  function exportDetailToCSV(data) {
+    const csvContent = data.map(row => 
+      row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.download = `Detail_Dokumen_Per_Mesin_${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification('CSV berhasil didownload!', 'success');
+  }
+
+  // ==== Export Detail to PDF ====
+  function exportDetailToPDF(data) {
+    const timestamp = new Date().toLocaleString('id-ID', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const printWindow = window.open('', '_blank');
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Detail Dokumen per Mesin - Dashboard OMOB</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            color: #333;
+            background: #fff;
+          }
+          
+          .header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+          }
+          
+          .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+          }
+          
+          .info-box {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 10px;
+          }
+          
+          .info-box .label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+          }
+          
+          .info-box .value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
+            margin-left: 5px;
+          }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 11px;
+          }
+          
+          thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+          
+          thead th {
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          
+          tbody tr:hover {
+            background-color: #f3f4f6;
+          }
+          
+          tbody td {
+            padding: 10px 8px;
+            font-size: 11px;
+            color: #374151;
+          }
+          
+          .doc-type {
+            font-weight: 600;
+            color: #667eea;
+          }
+          
+          .status-lengkap {
+            color: #059669;
+            font-weight: 600;
+          }
+          
+          .status-belum {
+            color: #dc2626;
+            font-weight: 600;
+          }
+          
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+          
+          .summary {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+          }
+          
+          .summary .count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            display: inline-block;
+          }
+          
+          .summary .text {
+            font-size: 14px;
+            color: #555;
+            display: inline-block;
+            margin-left: 10px;
+          }
+          
+          @media print {
+            body {
+              padding: 20px;
+            }
+            
+            .header h1 {
+              font-size: 24px;
+            }
+            
+            table {
+              font-size: 10px;
+            }
+            
+            thead th {
+              padding: 8px 6px;
+            }
+            
+            tbody td {
+              padding: 6px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📋 Detail Dokumen per Mesin</h1>
+          <div class="subtitle">Dashboard OMOB - Monitoring Dokumen Mesin</div>
+          <div class="info-box">
+            <span class="label">Tanggal Export:</span>
+            <span class="value">${timestamp}</span>
+          </div>
+        </div>
+        
+        <div class="summary">
+          <span class="count">${data.length - 1}</span>
+          <span class="text">dokumen dari ${new Set(data.slice(1).map(r => r[0])).size} mesin</span>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              ${data[0].map(header => `<th>${header}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${data.slice(1).map(row => `
+              <tr>
+                <td>${row[0]}</td>
+                <td>${row[1]}</td>
+                <td>${row[2]}</td>
+                <td>${row[3]}</td>
+                <td class="doc-type">${row[4]}</td>
+                <td>${row[5]}</td>
+                <td>${row[6]}</td>
+                <td>${row[7]}</td>
+                <td>${row[8]}</td>
+                <td>${row[9]}</td>
+                <td class="${row[10] === 'Lengkap' ? 'status-lengkap' : 'status-belum'}">${row[10]}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          <p><strong>Dashboard OMOB</strong> | Sistem Monitoring Dokumen Mesin Real-time</p>
+          <p style="margin-top: 5px;">Dokumen ini digenerate secara otomatis oleh sistem</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    printWindow.onload = function() {
+      printWindow.print();
+      showNotification('PDF siap untuk didownload!', 'success');
+    };
+  }
+
+  /* ============================================================= */
+  /* === FUNGSI: RENDER DETAIL DOKUMEN PER MESIN === */
+  /* ============================================================= */
+  function renderMachineDetails() {
+    const container = document.getElementById('machineDetailsContainer');
+    container.innerHTML = '';
+
+    const filteredMachines = getFilteredMachinesForDetail();
+
+    if (filteredMachines.length === 0) {
+      container.innerHTML = '<p class="text-center text-gray-500 py-8">Tidak ada mesin yang sesuai dengan filter.</p>';
+      paginationState.detail.totalPages = 1;
+      updateDetailPaginationUI();
+      return;
+    }
+
+    // Calculate pagination
+    const pageSize = paginationState.detail.pageSize;
+    const currentPage = paginationState.detail.currentPage;
+    const totalPages = Math.ceil(filteredMachines.length / pageSize);
+    paginationState.detail.totalPages = totalPages;
+
+    // Ensure current page is valid
+    if (currentPage > totalPages) {
+      paginationState.detail.currentPage = totalPages;
+    }
+
+    // Get paginated data
+    const startIndex = (paginationState.detail.currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedMachines = filteredMachines.slice(startIndex, endIndex);
+
+    // loop paginated mesin
+    paginatedMachines.forEach(machine => {
+        // hitung total dokumen lengkap vs belum lengkap
+        const totalDocs = machine.documents.length;
+        const completeDocs = machine.documents.filter(d => d.status === 'complete').length;
+        const incompleteDocs = totalDocs - completeDocs;
+
+        const machineSection = document.createElement('div');
+        machineSection.className = 'p-4 bg-white rounded-lg shadow border border-gray-200';
+
+        const sanitizedMachineId = machine.machineName.replace(/[^a-zA-Z0-9]/g, '_');
+
+        machineSection.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-800">${machine.machineName}</h4>
+              <p class="text-sm text-gray-500">${machine.machineCode} - ${machine.process || '-'}</p>
+            </div>
+            <div class="text-sm text-gray-600">
+              <span class="mr-3">Lengkap: <span class="font-semibold text-green-600">${completeDocs}</span></span>
+              <span>Belum: <span class="font-semibold text-red-600">${incompleteDocs}</span></span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Dokumen</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Dokumen</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nomor Dokumen</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">Revisi</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Issued Date</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Review Date</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="docs-${sanitizedMachineId}" class="divide-y divide-gray-200 bg-white"></tbody>
+            </table>
+          </div>
+        `;
+        container.appendChild(machineSection);
+
+        const docBody = machineSection.querySelector(`#docs-${sanitizedMachineId}`);
+
+        if (totalDocs === 0) {
+          docBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-3">Tidak ada dokumen.</td></tr>';
+        } else {
+          machine.documents.forEach(doc => {
+            const status = doc.status === 'complete' ? 'Lengkap' : 'Belum Lengkap';  // Kolom K
+            const statusClass = doc.status === 'complete'
+              ? 'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium'
+              : 'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium';
+
+            const docType = doc.type.toUpperCase();       // Kolom E
+            const docTitle = doc.title;                   // Kolom G
+            const docNumber = doc.docNumber || '-';       // Kolom F
+            const revision = doc.rev || '-';              // Kolom H
+            const issuedDate = formatDateToEnglish(doc.issuedDate);     // Kolom I - format to English
+            const reviewDate = formatDateToEnglish(doc.reviewDate);     // Kolom J - format to English
+
+            docBody.insertAdjacentHTML('beforeend', `
+              <tr>
+                <td class="px-4 py-2 text-sm text-gray-700">${docType}</td>
+                <td class="px-4 py-2 text-sm text-gray-700">${docTitle}</td>
+                <td class="px-4 py-2 text-sm text-gray-700">${docNumber}</td>
+                <td class="px-4 py-2 text-sm text-gray-700 text-center">${revision}</td>
+                <td class="px-4 py-2 text-sm text-gray-700">${issuedDate}</td>
+                <td class="px-4 py-2 text-sm text-gray-700">${reviewDate}</td>
+                <td class="px-4 py-2 text-sm text-center"><span class="${statusClass}">${status}</span></td>
+              </tr>
+            `);
+          });
+        }
+    });
+
+    updateDetailPaginationUI();
+  }
+
+  // ==== Show Login Modal ====
+  function showLoginModal() {
+    document.getElementById('loginModal').classList.remove('hidden');
+  }
+
+  // ==== Close Login Modal ====
+  function closeLoginModal() {
+    // Only allow closing if already logged in as viewer or higher
+    if (currentUser.isAuthenticated) {
+      document.getElementById('loginModal').classList.add('hidden');
+      // Reset form
+      document.getElementById('loginForm').reset();
+    }
+  }
+
+  // ==== Handle Login ====
+  function handleLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    console.log('Login attempt:', username);
+    console.log('Available users:', Object.keys(USERS));
+    
+    const user = USERS[username];
+    
+    console.log('User found:', user);
+    console.log('Password match:', user ? (user.password === password) : 'N/A');
+    
+    if (user && user.password === password) {
+      currentUser = {
+        username: username,
+        level: user.level,
+        displayName: user.displayName,
+        isAuthenticated: true
+      };
+      
+      // Hide login modal
+      document.getElementById('loginModal').classList.add('hidden');
+      
+      // Update user display with level label
+      const levelLabel = getLevelLabel(user.level);
+      document.getElementById('currentUserDisplay').textContent = `${user.displayName} (${levelLabel})`;
+      
+      // Update login button to logout button
+      const loginBtn = document.getElementById('loginButton');
+      loginBtn.innerHTML = `
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span class="text-sm">Logout</span>
+      `;
+      loginBtn.onclick = handleLogout;
+      loginBtn.classList.remove('bg-green-500');
+      loginBtn.classList.add('bg-red-500');
+      
+      // Apply permissions
+      applyPermissions();
+      
+      // Re-render dashboard with new permissions
+      updateDashboard();
+      
+      showNotification(`Selamat datang, ${username}!`, 'success');
+    } else {
+      showNotification('Username atau password salah!', 'error');
+    }
+  }
+
+  // ==== Handle Logout ====
+  function handleLogout() {
+    currentUser = {
+      username: null,
+      level: 1,
+      displayName: 'Viewer',
+      isAuthenticated: true
+    };
+    
+    // Update user display back to Viewer
+    document.getElementById('currentUserDisplay').textContent = 'Viewer';
+    
+    // Reset login button
+    const loginBtn = document.getElementById('loginButton');
+    loginBtn.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+      </svg>
+      <span class="text-sm">Login User/Admin</span>
+    `;
+    loginBtn.onclick = showLoginModal;
+    loginBtn.classList.remove('bg-red-500');
+    loginBtn.classList.add('bg-green-500');
+    
+    // Reset form
+    document.getElementById('loginForm').reset();
+    
+    // Apply viewer permissions
+    applyPermissions();
+    
+    // Re-render dashboard
+    updateDashboard();
+    
+    showNotification('Anda telah logout. Kembali ke mode Viewer.', 'success');
+  }
+
+  // ==== Fetch Change History Data ====
+  async function fetchChangeHistory() {
+    try {
+      const response = await fetch(CHANGE_HISTORY_URL);
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          processChangeHistory(results.data);
+        },
+        error: function(error) {
+          console.error('Error parsing Change History CSV:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching Change History sheet:', error);
+      showNotification('Gagal memuat Change History!', 'error');
+    }
+  }
+
+  // ==== Process Change History Data ====
+  function processChangeHistory(rows) {
+    changeHistoryData = [];
+    
+    rows.forEach(row => {
+      const columns = Object.values(row);
+      
+      // Column A = Timestamp
+      // Column B = User
+      // Column C = Action
+      // Column D = Machine
+      // Column E = Details
+      
+      const timestamp = columns[0] ? columns[0].trim() : '';
+      const user = columns[1] ? columns[1].trim() : '';
+      const action = columns[2] ? columns[2].trim() : '';
+      const machine = columns[3] ? columns[3].trim() : '';
+      const details = columns[4] ? columns[4].trim() : '';
+      
+      if (timestamp && user && action) {
+        changeHistoryData.push({
+          timestamp,
+          user,
+          action,
+          machine,
+          details
+        });
+      }
+    });
+    
+    // Sort by timestamp descending (newest first)
+    changeHistoryData.sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return dateB - dateA;
+    });
+    
+    filteredHistoryData = [...changeHistoryData];
+    populateHistoryFilters();
+    renderChangeHistory();
+  }
+
+  // ==== Populate History Filters ====
+  function populateHistoryFilters() {
+    // Populate User Filter
+    const users = [...new Set(changeHistoryData.map(h => h.user))].filter(u => u);
+    const userFilter = document.getElementById('historyUserFilter');
+    userFilter.innerHTML = '<option value="all">All Users</option>';
+    users.forEach(user => {
+      userFilter.innerHTML += `<option value="${user}">${user}</option>`;
+    });
+
+    // Populate Machine Filter
+    const machines = [...new Set(changeHistoryData.map(h => h.machine))].filter(m => m);
+    const machineFilter = document.getElementById('historyMachineFilter');
+    machineFilter.innerHTML = '<option value="all">All Machines</option>';
+    machines.forEach(machine => {
+      machineFilter.innerHTML += `<option value="${machine}">${machine}</option>`;
+    });
+  }
+
+  // ==== Filter Change History ====
+  function filterChangeHistory() {
+    const actionFilter = document.getElementById('historyActionFilter').value;
+    const userFilter = document.getElementById('historyUserFilter').value;
+    const machineFilter = document.getElementById('historyMachineFilter').value;
+
+    filteredHistoryData = changeHistoryData.filter(item => {
+      const actionMatch = actionFilter === 'all' || item.action === actionFilter;
+      const userMatch = userFilter === 'all' || item.user === userFilter;
+      const machineMatch = machineFilter === 'all' || item.machine === machineFilter;
+      
+      return actionMatch && userMatch && machineMatch;
+    });
+
+    paginationState.history.currentPage = 1;
+    renderChangeHistory();
+  }
+
+  // ==== Render Change History ====
+  function renderChangeHistory() {
+    const tableBody = document.getElementById('changeHistoryTable');
+    tableBody.innerHTML = '';
+
+    if (filteredHistoryData.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Tidak ada history yang sesuai filter.</td></tr>';
+      paginationState.history.totalPages = 1;
+      updateHistoryPaginationUI();
+      return;
+    }
+
+    // Calculate pagination
+    const pageSize = paginationState.history.pageSize;
+    const currentPage = paginationState.history.currentPage;
+    const totalPages = Math.ceil(filteredHistoryData.length / pageSize);
+    paginationState.history.totalPages = totalPages;
+
+    if (currentPage > totalPages) {
+      paginationState.history.currentPage = totalPages;
+    }
+
+    const startIndex = (paginationState.history.currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = filteredHistoryData.slice(startIndex, endIndex);
+
+    paginatedData.forEach(item => {
+      const actionBadge = item.action === 'Update SOP' 
+        ? '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Update SOP</span>'
+        : '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Update Status</span>';
+
+      const row = `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 text-sm text-gray-700">${item.timestamp}</td>
+          <td class="px-6 py-4 text-sm text-gray-700 font-medium">${item.user}</td>
+          <td class="px-6 py-4 text-sm">${actionBadge}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">${item.machine || '-'}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">${item.details || '-'}</td>
+        </tr>
+      `;
+      tableBody.insertAdjacentHTML('beforeend', row);
+    });
+
+    updateHistoryPaginationUI();
+  }
+
+  // ==== Update History Pagination UI ====
+  function updateHistoryPaginationUI() {
+    const { currentPage, totalPages } = paginationState.history;
+    document.getElementById('historyPageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    const prevBtn = document.getElementById('historyPrevBtn');
+    const nextBtn = document.getElementById('historyNextBtn');
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  // ==== Change History Page ====
+  function changeHistoryPage(direction) {
+    if (direction === 'prev' && paginationState.history.currentPage > 1) {
+      paginationState.history.currentPage--;
+    } else if (direction === 'next' && paginationState.history.currentPage < paginationState.history.totalPages) {
+      paginationState.history.currentPage++;
+    }
+    renderChangeHistory();
+  }
+
+  // ==== Change History Page Size ====
+  function changeHistoryPageSize() {
+    paginationState.history.pageSize = parseInt(document.getElementById('historyPageSize').value);
+    paginationState.history.currentPage = 1;
+    renderChangeHistory();
+  }
+
+  // ==== Refresh Change History ====
+  function refreshChangeHistory() {
+    showLoadingIndicator();
+    fetchChangeHistory();
+    setTimeout(() => {
+      hideLoadingIndicator();
+      showNotification('Change History berhasil di-refresh!', 'success');
+    }, 1000);
+  }
+
+  // ==== Apply Permissions Based on User Level ====
+  function applyPermissions() {
+    const level = currentUser.level;
+    
+    // Level 1 (Viewer): Hide all export/edit buttons and Change History menu
+    if (level === 1) {
+      document.querySelectorAll('[onclick*="export"]').forEach(btn => btn.classList.add('hidden'));
+      document.querySelectorAll('[onclick*="showUpdateSOPModal"]').forEach(btn => btn.classList.add('hidden'));
+      document.querySelectorAll('[onclick*="showUpdateDocumentModal"]').forEach(btn => btn.classList.add('hidden'));
+      // Hide action column header
+      const actionHeader = document.getElementById('incompleteActionHeader');
+      if (actionHeader) actionHeader.classList.add('hidden');
+      // Hide Change History nav button
+      const historyNavBtn = document.getElementById('historyNavBtn');
+      if (historyNavBtn) historyNavBtn.classList.add('hidden');
+    }
+    
+    // Level 2 (User): Only export PDF/CSV, update SOP, and view Change History
+    if (level === 2) {
+      // Show export buttons
+      document.querySelectorAll('[onclick*="export"]').forEach(btn => btn.classList.remove('hidden'));
+      // Show SOP update buttons only
+      document.querySelectorAll('[onclick*="showUpdateSOPModal"]').forEach(btn => btn.classList.remove('hidden'));
+      // Hide document update buttons (admin only)
+      document.querySelectorAll('[onclick*="showUpdateDocumentModal"]').forEach(btn => btn.classList.add('hidden'));
+      // Hide action column header (admin only)
+      const actionHeader = document.getElementById('incompleteActionHeader');
+      if (actionHeader) actionHeader.classList.add('hidden');
+      // Show Change History nav button
+      const historyNavBtn = document.getElementById('historyNavBtn');
+      if (historyNavBtn) historyNavBtn.classList.remove('hidden');
+    }
+    
+    // Level 3 (Administrator): Export + Update all documents + Update SOP + View Change History
+    if (level === 3) {
+      // Show all buttons
+      document.querySelectorAll('[onclick*="export"]').forEach(btn => btn.classList.remove('hidden'));
+      document.querySelectorAll('[onclick*="showUpdateSOPModal"]').forEach(btn => btn.classList.remove('hidden'));
+      document.querySelectorAll('[onclick*="showUpdateDocumentModal"]').forEach(btn => btn.classList.remove('hidden'));
+      // Show action column header
+      const actionHeader = document.getElementById('incompleteActionHeader');
+      if (actionHeader) actionHeader.classList.remove('hidden');
+      // Show Change History nav button
+      const historyNavBtn = document.getElementById('historyNavBtn');
+      if (historyNavBtn) historyNavBtn.classList.remove('hidden');
+    }
+  }
+
+  // ==== Check Permission ====
+  function hasPermission(requiredLevel) {
+    return currentUser.isAuthenticated && currentUser.level >= requiredLevel;
+  }
+
+  // ==== Show Update SOP Modal ====
+  function showUpdateSOPModal(machine, title, oldNumber, oldRevision, expiryDate) {
+    if (!hasPermission(2)) {
+      showNotification('Anda tidak memiliki akses untuk update SOP!', 'error');
+      return;
+    }
+    
+    document.getElementById('updateSOPMachine').value = machine;
+    document.getElementById('updateSOPOldNumber').value = oldNumber;
+    document.getElementById('updateSOPMachineDisplay').textContent = machine;
+    document.getElementById('updateSOPTitleDisplay').textContent = title;
+    document.getElementById('updateSOPNumber').value = oldNumber;
+    document.getElementById('updateSOPRevision').value = oldRevision;
+    
+    // Set default dates to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('updateSOPIssuedDate').value = today;
+    document.getElementById('updateSOPReviewDate').value = today;
+    
+    document.getElementById('updateSOPModal').classList.remove('hidden');
+  }
+
+  // ==== Close Update SOP Modal ====
+  function closeUpdateSOPModal() {
+    document.getElementById('updateSOPModal').classList.add('hidden');
+  }
+
+  // ==== Update SOP to Google Sheets ====
+  async function updateSOPToSheet(machine, oldNumber, newNumber, newRevision, newIssuedDate, newReviewDate) {
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'updateSOP',
+          machine: machine,
+          oldNumber: oldNumber,
+          newNumber: newNumber,
+          newRevision: newRevision,
+          newIssuedDate: newIssuedDate,
+          newReviewDate: newReviewDate,
+          updatedBy: currentUser.displayName || 'User',
+          updatedAt: new Date().toISOString()
+        })
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating SOP to Google Sheets:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ==== Handle Update SOP ====
+  async function handleUpdateSOP(event) {
+    event.preventDefault();
+    
+    const machine = document.getElementById('updateSOPMachine').value;
+    const oldNumber = document.getElementById('updateSOPOldNumber').value;
+    const newNumber = document.getElementById('updateSOPNumber').value;
+    const newRevision = document.getElementById('updateSOPRevision').value;
+    const newIssuedDate = document.getElementById('updateSOPIssuedDate').value;
+    const newReviewDate = document.getElementById('updateSOPReviewDate').value;
+    
+    // Find machine in globalData
+    const machineData = globalData.machines.find(m => m.machineName === machine);
+    if (!machineData) {
+      showNotification('Mesin tidak ditemukan!', 'error');
+      return;
+    }
+    
+    // Find SOP document
+    const sopDoc = machineData.documents.find(d => d.type === 'sop' && d.docNumber === oldNumber);
+    if (!sopDoc) {
+      showNotification('Dokumen SOP tidak ditemukan!', 'error');
+      return;
+    }
+    
+    // Show loading
+    showLoadingIndicator();
+    
+    // Update to Google Sheets
+    const result = await updateSOPToSheet(machine, oldNumber, newNumber, newRevision, newIssuedDate, newReviewDate);
+    
+    if (result.success) {
+      // Update local data
+      sopDoc.docNumber = newNumber;
+      sopDoc.rev = newRevision;
+      sopDoc.issuedDate = newIssuedDate;
+      sopDoc.reviewDate = newReviewDate;
+      
+      // Parse review date and calculate new expiry
+      const reviewDateObj = parseDate(newReviewDate);
+      if (reviewDateObj) {
+        sopDoc.expiryDate = reviewDateObj.toISOString().split('T')[0];
+      }
+      
+      hideLoadingIndicator();
+      closeUpdateSOPModal();
+      showNotification('SOP berhasil diupdate ke Google Sheets!', 'success');
+      
+      // Re-render dashboard
+      updateDashboard();
+      
+      // Refresh data from sheet after 2 seconds
+      setTimeout(() => {
+        fetchSheetData();
+      }, 2000);
+    } else {
+      hideLoadingIndicator();
+      showNotification('Gagal update ke Google Sheets. Perubahan hanya tersimpan lokal.', 'error');
+      
+      // Still update local data
+      sopDoc.docNumber = newNumber;
+      sopDoc.rev = newRevision;
+      sopDoc.issuedDate = newIssuedDate;
+      sopDoc.reviewDate = newReviewDate;
+      
+      const reviewDateObj = parseDate(newReviewDate);
+      if (reviewDateObj) {
+        sopDoc.expiryDate = reviewDateObj.toISOString().split('T')[0];
+      }
+      
+      closeUpdateSOPModal();
+      updateDashboard();
+    }
+  }
+
+  // ==== Show Update Document Modal (User & Admin) ====
+  function showUpdateDocumentModal(machine, docType, docNumber, currentStatus) {
+    if (!hasPermission(3)) {
+      showNotification('Hanya Administrator yang dapat mengakses fitur ini!', 'error');
+      return;
+    }
+    
+    document.getElementById('updateDocMachine').value = machine;
+    document.getElementById('updateDocType').value = docType;
+    document.getElementById('updateDocNumber').value = docNumber;
+    document.getElementById('updateDocMachineDisplay').textContent = machine;
+    document.getElementById('updateDocTypeDisplay').textContent = docType.toUpperCase();
+    document.getElementById('updateDocNumberDisplay').textContent = docNumber || '-';
+    document.getElementById('updateDocStatus').value = currentStatus;
+    
+    document.getElementById('updateDocumentModal').classList.remove('hidden');
+  }
+
+  // ==== Close Update Document Modal ====
+  function closeUpdateDocumentModal() {
+    document.getElementById('updateDocumentModal').classList.add('hidden');
+  }
+
+  // ==== Update Document Status to Google Sheets ====
+  async function updateDocumentToSheet(machine, docType, docNumber, newStatus) {
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'updateDocument',
+          machine: machine,
+          docType: docType,
+          docNumber: docNumber,
+          newStatus: newStatus,
+          updatedBy: currentUser.displayName || 'Administrator',
+          updatedAt: new Date().toISOString()
+        })
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating document to Google Sheets:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ==== Handle Update Document ====
+  async function handleUpdateDocument(event) {
+    event.preventDefault();
+    
+    const machine = document.getElementById('updateDocMachine').value;
+    const docType = document.getElementById('updateDocType').value;
+    const docNumber = document.getElementById('updateDocNumber').value;
+    const newStatus = document.getElementById('updateDocStatus').value;
+    
+    // Find machine in globalData
+    const machineData = globalData.machines.find(m => m.machineName === machine);
+    if (!machineData) {
+      showNotification('Mesin tidak ditemukan!', 'error');
+      return;
+    }
+    
+    // Find document
+    const doc = machineData.documents.find(d => d.type === docType && d.docNumber === docNumber);
+    if (!doc) {
+      showNotification('Dokumen tidak ditemukan!', 'error');
+      return;
+    }
+    
+    // Show loading
+    showLoadingIndicator();
+    
+    // Update to Google Sheets
+    const result = await updateDocumentToSheet(machine, docType, docNumber, newStatus);
+    
+    if (result.success) {
+      // Update local data
+      doc.status = newStatus;
+      
+      hideLoadingIndicator();
+      closeUpdateDocumentModal();
+      showNotification('Status dokumen berhasil diupdate ke Google Sheets!', 'success');
+      
+      // Re-render dashboard
+      updateDashboard();
+      
+      // Refresh data from sheet after 2 seconds
+      setTimeout(() => {
+        fetchSheetData();
+      }, 2000);
+    } else {
+      hideLoadingIndicator();
+      showNotification('Gagal update ke Google Sheets. Perubahan hanya tersimpan lokal.', 'error');
+      
+      // Still update local data
+      doc.status = newStatus;
+      
+      closeUpdateDocumentModal();
+      updateDashboard();
+    }
+  }
+
+  // ==== Initialize ====
+  window.addEventListener('load', async () => {
+    // Hide login modal by default (viewer mode)
+    document.getElementById('loginModal').classList.add('hidden');
+    
+    // Show main header and content immediately (viewer mode)
+    document.getElementById('mainHeader').classList.remove('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    
+    // Apply viewer permissions
+    applyPermissions();
+    
+    // Fetch user login data from Google Sheets
+    await fetchUserLoginData();
+    
+    // Fetch main dashboard data
+    await fetchSheetData();
+    
+    // Fetch change history data if user has permission
+    if (currentUser.level >= 2) {
+      await fetchChangeHistory();
+    }
+  });
+    // =================== OPL GOOGLE SHEET CONFIG ===================
+const OPL_SHEET_ID = "1XvznBwqaecJsDsGha7Q5B8-Z-JefgvN97ggMbabIR54";
+const OPL_GID = "303262600";
+
+let oplData = [];
+let filteredOPLData = [];
+let oplItemsPerPage = 10;
+let oplCurrentPage = 1;
+let isLoadingOPL = false;
+
+// =================== FETCH OPL ====================
+async function fetchOPLData() {
+    if (isLoadingOPL) return false;
+    isLoadingOPL = true;
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${OPL_SHEET_ID}/gviz/tq?tqx=out:json&gid=${OPL_GID}`;
+        const response = await fetch(url);
+        const text = await response.text();
+        // Pastikan JSON parsing benar
+        const jsonText = text.substr(47).slice(0, -2);
+        const json = JSON.parse(jsonText);
+        const rows = json.table.rows;
+        oplData = processOPLData(rows);
+        filteredOPLData = [...oplData];
+        isLoadingOPL = false;
+
+        // INI BARIS KRUSIAL: AKTIFKAN DAN PANGGIL FUNGSI YANG BENAR
+        initializeOPLFilterOptions(); 
+        updateOPLSummaryCards();    
+        renderOPLTable();
+        
+        return true;
+    } catch (e) {
+        console.error("Error fetching OPL:", e);
+        isLoadingOPL = false;
+        return false;
+    }
+}
+ // =================== UPDATE OPL SUMMARY CARDS (FINAL DAN BENAR) ===================
+function updateOPLSummaryCards() {
+    const totalOPLCount = filteredOPLData.length; 
+    
+    // MENGGUNAKAN PROPERTI YANG BENAR: item.mesin
+    const uniqueMachines = [...new Set(filteredOPLData.map(item => item.mesin))].filter(Boolean);
+    const totalMachinesOPLCount = uniqueMachines.length;
+    
+    const avgOPL = totalMachinesOPLCount > 0 
+                   ? (totalOPLCount / totalMachinesOPLCount).toFixed(1) 
+                   : 0;
+    
+    document.getElementById("totalOPL").textContent = totalOPLCount.toLocaleString(); 
+    document.getElementById("totalMachinesOPL").textContent = totalMachinesOPLCount.toLocaleString(); 
+    document.getElementById("avgOPLPerMachine").textContent = avgOPL; 
+    
+    // ... (sisanya tetap)
+}
+    
+// =================== PROCESS OPL ===================
+function processOPLData(rows) {
+  const processed = [];
+
+  rows.forEach((row) => {
+    const c = row.c;
+    if (!c) return;
+
+    const no = c[0]?.v ?? "";
+    const judul = c[1]?.v ?? "-";
+    const nomor = c[2]?.v ?? "-";
+    const rev = c[3]?.v ?? "";
+    const penyusun = c[4]?.v ?? "-";
+    const owner = c[5]?.v ?? "-";
+    const issued = c[6]?.v ?? "-";
+    const mesin = c[7]?.v ?? "-";
+    const status = c[8]?.v ?? "-";
+    const bulanMasuk = c[9]?.v ?? "-";
+    const bulan = c[10]?.v ?? "-";
+    const tahun = c[11]?.v ?? "-";
+    const sdAcuan = c[12]?.v ?? "-";
+    const link = c[13]?.v ?? ""; // Kolom Link OPL yang benar
+
+    // exclude empty rows
+    if (judul !== "-" || nomor !== "-") {
+      processed.push({
+        no,
+        judul,
+        nomor,
+        rev,
+        penyusun,
+        owner,
+        issued,
+        mesin,
+        status,
+        bulanMasuk,
+        bulan,     // simpan juga bulan jika diperlukan
+        tahun,
+        sdAcuan,
+        link
+      });
+    }
+  });
+
+  return processed;
+}
+
+
+// =================== FILTERS ===================
+// HAPUS FUNGSI populateOPLFilters() YANG LAMA DI SINI,
+// LALU GANTI DENGAN KODE initializeOPLFilterOptions() DI BAWAH:
+
+function initializeOPLFilterOptions() { // <-- INI ADALAH GANTINYA populateOPLFilters
+    // MENGGUNAKAN PROPERTI YANG BENAR: item.mesin dan item.owner
+    const uniqueMachines = [...new Set(oplData.map(item => item.mesin))].filter(Boolean);
+    const uniqueOwners = [...new Set(oplData.map(item => item.owner))].filter(Boolean);
+    
+    const machineMenu = document.getElementById("oplMachineFilterOptions");
+    const ownerMenu = document.getElementById("oplOwnerFilterOptions");
+    
+    if (machineMenu) machineMenu.innerHTML = '';
+    if (ownerMenu) ownerMenu.innerHTML = '';
+
+    // Generate Opsi Mesin
+    uniqueMachines.sort().forEach(o => {
+        const cleanedValue = String(o).trim();
+        if (machineMenu) {
+            machineMenu.innerHTML += `
+                <div class="dropdown-checkbox-item">
+                    <input type="checkbox" id="opl-filter-mesin-${cleanedValue.replace(/\s/g, '_')}" 
+                           value="${cleanedValue}" 
+                           onchange="applyOPLFilters()">
+                    <label for="opl-filter-mesin-${cleanedValue.replace(/\s/g, '_')}">${o}</label>
+                </div>
+            `;
+        }
+    });
+
+    // Generate Opsi Owner
+    uniqueOwners.sort().forEach(o => {
+        const cleanedValue = String(o).trim();
+        if (ownerMenu) {
+            ownerMenu.innerHTML += `
+                <div class="dropdown-checkbox-item">
+                    <input type="checkbox" id="opl-filter-owner-${cleanedValue.replace(/\s/g, '_')}" 
+                           value="${cleanedValue}" 
+                           onchange="applyOPLFilters()">
+                    <label for="opl-filter-owner-${cleanedValue.replace(/\s/g, '_')}">${o}</label>
+                </div>
+            `;
+        }
+    });
+    
+    const machineText = document.getElementById("oplMachineFilterText");
+    const ownerText = document.getElementById("oplOwnerFilterText");
+    if (machineText) {
+        const checkedMachines = document.querySelectorAll('#oplMachineFilterOptions input:checked').length;
+        machineText.textContent = checkedMachines > 0 ? `${checkedMachines} dipilih` : 'Semua Mesin/Area';
+    }
+    if (ownerText) {
+        const checkedOwners = document.querySelectorAll('#oplOwnerFilterOptions input:checked').length;
+        ownerText.textContent = checkedOwners > 0 ? `${checkedOwners} dipilih` : 'Semua Owner';
+    }
+}
+
+// =================== APPLY FILTERS ===================
+function applyOPLFilters() {
+    // 1. Ambil pilihan filter Mesin/Area yang dicentang
+    const selectedMachines = Array.from(document.querySelectorAll('#oplMachineFilterOptions input:checked'))
+                                  .map(c => c.value);
+    
+    // 2. Ambil pilihan filter Owner yang dicentang
+    const selectedOwners = Array.from(document.querySelectorAll('#oplOwnerFilterOptions input:checked'))
+                                .map(c => c.value);
+
+    // 3. Ambil kata kunci dari kolom pencarian (jika ada)
+    const titleSearch = document.getElementById('oplTitleSearch') 
+                        ? document.getElementById('oplTitleSearch').value.toLowerCase() 
+                        : '';
+
+    // 4. Reset halaman ke-1 sebelum filtering
+    oplCurrentPage = 1;
+
+    // 5. Lakukan Filtering
+    filteredOPLData = oplData.filter(item => {
+        let isMatch = true;
+
+        // Filter Mesin/Area (Jika ada yang dipilih, item harus cocok dengan salah satunya)
+        // JANGAN MENGGANTI item.mesin kecuali kamu yakin nama propertinya berbeda!
+        if (selectedMachines.length > 0 && !selectedMachines.includes(item.mesin)) {
+            isMatch = false;
+        }
+
+        // Filter Owner (Jika ada yang dipilih, item harus cocok dengan salah satunya)
+        // JANGAN MENGGANTI item.owner kecuali kamu yakin nama propertinya berbeda!
+        if (isMatch && selectedOwners.length > 0 && !selectedOwners.includes(item.owner)) {
+            isMatch = false;
+        }
+
+        // Filter Pencarian Judul (Jika ada kata kunci)
+        // Ganti item.judul dengan properti yang benar jika berbeda!
+        if (isMatch && titleSearch && !item.judul.toLowerCase().includes(titleSearch)) {
+            isMatch = false;
+        }
+        
+        return isMatch;
+    });
+
+    // 6. Update tampilan setelah filter
+    updateOPLSummaryCards(); // Update Summary Cards dengan data yang sudah difilter
+    renderOPLTable();       // Tampilkan tabel yang sudah difilter
+}
+// =================== TABLE RENDER ===================
+function renderOPLTable() {
+    const tbody = document.getElementById("oplTableBody");
+    tbody.innerHTML = "";
+
+    const start = (oplCurrentPage - 1) * oplItemsPerPage;
+    const paginated = filteredOPLData.slice(start, start + oplItemsPerPage);
+
+    if (paginated.length === 0) {
+        tbody.innerHTML = `
+        <tr>
+            <td colspan="9" class="text-center text-gray-500 py-8">Tidak ada data OPL</td>
+        </tr>`;
+        return;
+    }
+
+    paginated.forEach((item, i) => {
+        tbody.innerHTML += `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-3">${start + i + 1}</td>
+            <td class="px-6 py-3">${item.judul}</td>
+            <td class="px-6 py-3">${item.nomor}</td>
+            <td class="px-6 py-3 text-center">${item.rev}</td>
+            <td class="px-6 py-3">${item.penyusun}</td>
+            <td class="px-6 py-3">${item.owner}</td>
+            <td class="px-6 py-3">${formatDate(item.issued)}</td>
+            <td class="px-6 py-3">${item.mesin}</td>
+            <td class="px-6 py-3 text-center">
+                ${item.link ?
+            `<a href="${item.link}" target="_blank" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs">Lihat</a>` :
+            `<span class="text-gray-400 text-xs">Tidak ada</span>`}
+            </td>
+        </tr>`;
+    });
+
+    const totalPages = Math.ceil(filteredOPLData.length / oplItemsPerPage);
+    document.getElementById("oplPageInfo").textContent = `Halaman ${oplCurrentPage} dari ${totalPages}`;
+    document.getElementById("oplPrevBtn").disabled = oplCurrentPage === 1;
+    document.getElementById("oplNextBtn").disabled = oplCurrentPage === totalPages;
+}
+
+function nextOPLPage() {
+    const totalPages = Math.ceil(filteredOPLData.length / oplItemsPerPage);
+    if (oplCurrentPage < totalPages) {
+        oplCurrentPage++;
+        renderOPLTable();
+    }
+}
+
+function previousOPLPage() {
+    if (oplCurrentPage > 1) {
+        oplCurrentPage--;
+        renderOPLTable();
+    }
+}
+
+function changeOPLItemsPerPage() {
+    oplItemsPerPage = parseInt(document.getElementById("oplItemsPerPage").value);
+    oplCurrentPage = 1;
+    renderOPLTable();
+}
+
+// =================== FORMAT DATE ===================
+function formatDate(dateInput) {
+    if (!dateInput) return "-";
+    try {
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return "-";
+        return `${d.getDate()} ${d.toLocaleString("en", { month: "short" })} ${d.getFullYear()}`;
+    } catch {
+        return "-";
+    }
+}
+
+// =================== RESET FILTER ===================
+function resetOPLFilters() {
+    document.querySelectorAll('#oplMachineFilterMenu input').forEach(c => c.checked = false);
+    document.querySelectorAll('#oplOwnerFilterMenu input').forEach(c => c.checked = false);
+    document.getElementById('oplTitleSearch').value = "";
+    applyOPLFilters();
+}
+
+// =================== TOGGLE OPL DROPDOWN FILTER ===================
+function toggleOPLFilterDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    
+    // Toggle class 'hidden' untuk menampilkan/menyembunyikan menu
+    menu.classList.toggle('hidden'); 
+    
+    // ... (Tutup dropdown lain saat yang ini dibuka)
+    document.querySelectorAll('.dropdown-checkbox-menu').forEach(otherMenu => {
+        if (otherMenu.id !== menuId && !otherMenu.classList.contains('hidden')) {
+            otherMenu.classList.add('hidden');
+        }
+    });
+} // <--- JANGAN ADA BARIS KOSONG DI SINI!
+</script>
+</body>
+</html>
