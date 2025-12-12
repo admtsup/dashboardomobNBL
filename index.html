@@ -753,7 +753,7 @@
     const response = await fetch(USER_LOGIN_URL + cacheBuster, {
       cache: 'no-store'  // Paksa browser tidak pakai cache
     });
-      
+      const csvText = await response.text();  // <-- BARIS INI YANG HILANG! 
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
@@ -3875,3 +3875,4 @@ function toggleOPLFilterDropdown(menuId) {
 </script>
 </body>
 </html>
+
