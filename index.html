@@ -747,9 +747,12 @@
 
   // ==== Fetch User Login Data from Google Sheets ====
   async function fetchUserLoginData() {
-    try {
-      const response = await fetch(USER_LOGIN_URL);
-      const csvText = await response.text();
+  try {
+    // Tambahkan timestamp untuk menghindari cache
+    const cacheBuster = `&_=${Date.now()}`;
+    const response = await fetch(USER_LOGIN_URL + cacheBuster, {
+      cache: 'no-store'  // Paksa browser tidak pakai cache
+    });
       
       Papa.parse(csvText, {
         header: true,
@@ -806,13 +809,16 @@
 
   // ==== Fetch Data from Google Sheets ====
   async function fetchSheetData() {
-    try {
-      globalData.isLoading = true;
-      showLoadingIndicator();
+  try {
+    globalData.isLoading = true;
+    showLoadingIndicator();
 
-      const response = await fetch(SHEET_URL);
-      const csvText = await response.text();
-      
+    const cacheBuster = `&_=${Date.now()}`;
+    const response = await fetch(SHEET_URL + cacheBuster, {
+      cache: 'no-store'
+    });
+    const csvText = await response.text();
+    
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
