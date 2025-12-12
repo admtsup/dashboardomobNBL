@@ -3545,28 +3545,31 @@ expiryCell.addEventListener('click', function() {
   }
 
   // ==== Initialize ====
-  window.addEventListener('load', async () => {
-    // Hide login modal by default (viewer mode)
-    document.getElementById('loginModal').classList.add('hidden');
-    
-    // Show main header and content immediately (viewer mode)
-    document.getElementById('mainHeader').classList.remove('hidden');
-    document.getElementById('mainContent').classList.remove('hidden');
-    
-    // Apply viewer permissions
-    applyPermissions();
-    
-    // Fetch user login data from Google Sheets
+window.addEventListener('load', async () => {
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('mainHeader').classList.remove('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  
+  applyPermissions();
+  
+  // Fetch user login data dari Google Sheets
+  await fetchUserLoginData();
+  
+  // AUTO-REFRESH UserLogin setiap 30 detik
+  setInterval(async () => {
+    console.log('Auto-refreshing UserLogin data...');
     await fetchUserLoginData();
-    
-    // Fetch main dashboard data
-    await fetchSheetData();
-    
-    // Fetch change history data if user has permission
-    if (currentUser.level >= 2) {
-      await fetchChangeHistory();
-    }
-  });
+    console.log('UserLogin updated:', Object.keys(USERS).length, 'users');
+  }, 30000);
+  
+  // Fetch main dashboard data
+  await fetchSheetData();
+  
+  if (currentUser.level >= 2) {
+    await fetchChangeHistory();
+  }
+});
+
     // =================== OPL GOOGLE SHEET CONFIG ===================
 const OPL_SHEET_ID = "1XvznBwqaecJsDsGha7Q5B8-Z-JefgvN97ggMbabIR54";
 const OPL_GID = "303262600";
@@ -3812,9 +3815,11 @@ function renderOPLTable() {
     });
 
     const totalPages = Math.ceil(filteredOPLData.length / oplItemsPerPage);
-    document.getElementById("oplPageInfo").textContent = `Halaman ${oplCurrentPage} dari ${totalPages}`;
-    document.getElementById("oplPrevBtn").disabled = oplCurrentPage === 1;
-    document.getElementById("oplNextBtn").disabled = oplCurrentPage === totalPages;
+document.getElementById("oplPageInfo").textContent = `Halaman ${oplCurrentPage} dari ${totalPages}`;
+document.getElementById("oplPrevBtn").disabled = oplCurrentPage === 1;
+document.getElementById("oplNextBtn").disabled = oplCurrentPage === totalPages;
+document.getElementById("oplTotalItems").textContent = filteredOPLData.length; // <-- TAMBAHKAN INI
+
 }
 
 function nextOPLPage() {
@@ -3875,4 +3880,5 @@ function toggleOPLFilterDropdown(menuId) {
 </script>
 </body>
 </html>
+
 
