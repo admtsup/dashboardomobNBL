@@ -115,6 +115,18 @@
       <div class="mb-6"><label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label> <input type="password" id="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password">
       </div><button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"> Login </button>
      </form>
+     <div class="mt-4 text-center">
+  <p class="text-sm text-gray-500 mb-2">atau masuk sebagai Guest</p>
+  <div class="flex gap-2">
+    <input type="password" id="guestPassword" 
+      class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+      placeholder="Password Guest">
+    <button type="button" onclick="handleGuestLogin()" 
+      class="px-6 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition">
+      Masuk
+    </button>
+  </div>
+</div>
      <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
       <p class="text-xs text-gray-700 mb-2">
        <svg class="w-4 h-4 inline mr-1 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -727,7 +739,30 @@
   // ==== Google Apps Script Web App URL ====
   // URL Web App dari Google Apps Script (sudah di-deploy)
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdA_00blDWDy6ul7cB4TypNt9WMWE8lS--xDlZ94sBhg568pcQHFc-jRY9g9tchMNZ/exec';
+// ==== Guest Password ====
+const GUEST_PASSWORD = '2026';
 
+function handleGuestLogin() {
+  const inputPassword = document.getElementById('guestPassword').value.trim();
+  
+  if (inputPassword === GUEST_PASSWORD) {
+    currentUser = {
+      username: 'guest',
+      level: 1,
+      name: 'Guest Viewer',
+      isAuthenticated: true
+    };
+    document.getElementById('currentUserDisplay').textContent = 'Guest Viewer';
+    closeLoginModal();
+    document.getElementById('mainHeader').classList.remove('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.querySelector('footer').classList.remove('hidden');
+    showNotification('Login sebagai Guest berhasil!', 'success');
+    applyAccessLevel();
+  } else {
+    showNotification('Password guest salah!', 'error');
+  }
+}
   // ==== User Authentication ====
   let USERS = {}; // Will be populated from Google Sheets
 
@@ -735,7 +770,7 @@
     username: null,
     level: 1, // Default viewer level
     name: 'Viewer',
-    isAuthenticated: true // Auto login as viewer
+    isAuthenticated: false
   };
 
   // ==== Global Data Structure ====
@@ -3880,6 +3915,7 @@ function toggleOPLFilterDropdown(menuId) {
 </script>
 </body>
 </html>
+
 
 
 
